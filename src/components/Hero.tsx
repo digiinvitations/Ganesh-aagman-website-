@@ -105,18 +105,19 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
           transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
           className="flex flex-col items-center w-full mb-2"
         >
-          <p className="font-serif text-text-body/80 uppercase tracking-[0.2em] text-[8px] sm:text-[9px] font-semibold mb-6 shadow-black drop-shadow-md">
-            7 DAYS • 7 CELEBRATIONS • ONE DIVINE JOURNEY
+          <p className="font-serif text-text-body/90 uppercase tracking-[0.2em] text-[8px] sm:text-[10px] font-semibold mb-6 shadow-black drop-shadow-md text-center leading-relaxed">
+            Grand celebration of completing 14 years of <br />
+            <span className="text-wine-dark font-bold text-[10px] sm:text-[12px]">DARSHAN HEIGHTS YUVA SANGH</span>
           </p>
           
           {/* Scroll Indicator */}
-          <div className="flex flex-col items-center opacity-90 cursor-pointer">
-            <span className="text-[9px] font-serif text-wine-dark uppercase tracking-[0.3em] mb-2 font-bold drop-shadow-md">SCROLL</span>
+          <div className="flex flex-col items-center opacity-100 cursor-pointer">
+            <span className="text-[11px] sm:text-[13px] font-serif text-wine-dark uppercase tracking-[0.3em] mb-2 font-extrabold drop-shadow-lg">SCROLL</span>
             <motion.div 
-              animate={{ y: [0, 6, 0] }}
+              animate={{ y: [0, 8, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              <ArrowDown className="w-4 h-4 text-wine-dark drop-shadow-md" />
+              <ArrowDown className="w-8 h-8 sm:w-9 sm:h-9 text-wine-dark drop-shadow-lg" strokeWidth={2.5} />
             </motion.div>
           </div>
         </motion.div>
