@@ -112,7 +112,7 @@ export function Events({ events, globalLogo }: EventsProps) {
   const universalLogo = globalLogo || events.find(e => e.logoUrl)?.logoUrl;
 
   return (
-    <section className="bg-[#4A0B1E] py-24 px-4 md:px-8 flex flex-col items-center border-t border-b border-[#D4AF37]/20 relative overflow-hidden">
+    <section className="bg-[#4A0B1E] py-24 px-4 md:px-8 flex flex-col items-center relative overflow-hidden">
       
       {/* Background radial glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(212,175,55,0.05)_0%,_transparent_70%)] pointer-events-none" />

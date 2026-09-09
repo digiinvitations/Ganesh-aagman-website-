@@ -69,7 +69,7 @@ export function RSVP() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full p-8 text-center bg-blush-main rounded-xl border border-pink-border shadow-sm mt-6"
+            className="w-full p-8 text-center bg-[#3B0918] rounded-xl border border-pink-border shadow-sm mt-6"
           >
             <h3 className="font-script text-3xl text-pink-accent mb-2">Thank You</h3>
             <p className="text-text-body text-sm opacity-80">We have received your response!</p>

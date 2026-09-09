@@ -38,9 +38,9 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
   };
 
   return (
-    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-blush-main">
+    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#3B0918]">
       {/* Background Video or Image */}
-      <div className="absolute inset-0 z-0 bg-blush-main">
+      <div className="absolute inset-0 z-0 bg-[#3B0918]">
         {data.heroVideoUrl ? (
           <video
             ref={videoRef}
@@ -64,7 +64,7 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
         {/* Dynamic Light/Pink Overlay for readability */}
         <div className={`absolute inset-0 bg-black/40 transition-opacity duration-1000 ${data.heroVideoUrl && !showText ? 'opacity-0' : 'opacity-100'}`} />
 
-        <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-blush-main via-blush-main/60 to-transparent pointer-events-none z-10" />
+        <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-[#3B0918] via-[#3B0918]/60 to-transparent pointer-events-none z-10" />
       </div>
 
       {/* Content */}

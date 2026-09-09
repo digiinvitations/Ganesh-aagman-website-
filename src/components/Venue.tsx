@@ -82,7 +82,7 @@ export function Venue({ venue, groom, bride, weddingDate }: VenueProps) {
               href={calendarUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-white text-wine-dark border border-pink-border px-8 py-3 rounded-md font-serif text-sm tracking-widest shadow-sm hover:bg-blush-main transition-colors active:scale-95"
+              className="flex items-center justify-center gap-2 bg-white text-wine-dark border border-pink-border px-8 py-3 rounded-md font-serif text-sm tracking-widest shadow-sm hover:bg-[#3B0918] transition-colors active:scale-95"
             >
               <CalendarPlus className="w-4 h-4" /> Save to Calendar
             </a>

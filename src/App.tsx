@@ -17,6 +17,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { Preloader } from './components/Preloader';
 import { Reveal } from './components/Reveal';
 import { EnvironmentEffects } from './components/EnvironmentEffects';
+import { ParallaxDivider } from './components/ParallaxDivider';
 
 function PublicView() {
   const [searchParams] = useSearchParams();
@@ -86,7 +87,7 @@ function PublicView() {
   }, [data]);
 
   if (!data) {
-    return <div className="min-h-screen bg-blush-main flex items-center justify-center font-serif text-wine-dark">Loading...</div>;
+    return <div className="min-h-screen bg-[#3B0918] flex items-center justify-center font-serif text-wine-dark">Loading...</div>;
   }
 
   if (isPreloading) {
@@ -94,7 +95,7 @@ function PublicView() {
   }
 
   return (
-    <div className={`w-full bg-blush-main relative mx-auto max-w-md shadow-2xl overflow-hidden sm:my-0 ${viewState !== 'main' ? 'h-[100svh]' : 'min-h-[100svh]'}`}>
+    <div className={`w-full bg-[#3B0918] relative mx-auto max-w-md shadow-2xl overflow-hidden sm:my-0 ${viewState !== 'main' ? 'h-[100svh]' : 'min-h-[100svh]'}`}>
       
       {/* Audio player remains mounted across transitions */}
       <MusicControl musicUrl={data.musicUrl} shouldPlay={viewState !== 'thumbnail'} />
@@ -103,23 +104,39 @@ function PublicView() {
       {viewState === 'main' && <EnvironmentEffects />}
 
       {/* Main Content (Always rendered so Hero video preloads and starts seamlessly) */}
-      <main className="w-full min-h-[100svh] bg-blush-main relative overflow-hidden">
+      <main className="w-full min-h-[100svh] bg-[#3B0918] relative overflow-hidden">
         <Hero data={data} shouldPlayVideo={viewState === 'main' || !data.openingVideoUrl} onVideoEnd={() => setIsHeroEnded(true)} />
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><InvitationMessage message={data.invitationMessage} isHeroEnded={isHeroEnded} /></Reveal>
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><Countdown targetDate={data.weddingDate} /></Reveal>
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><Events events={data.events} globalLogo={data.globalLogo} /></Reveal>
+        
         <Reveal delay={0.1}><LightDiya /></Reveal>
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><Timeline timeline={data.timeline} globalLogo={data.globalLogo} /></Reveal>
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><Venue venue={data.venue} groom={data.groom} bride={data.bride} weddingDate={data.weddingDate} /></Reveal>
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><RSVP /></Reveal>
+        
+        <ParallaxDivider />
         <Reveal delay={0.1}><ClosingMessage data={data} /></Reveal>
+        
         <Reveal delay={0.1}><Footer data={data} /></Reveal>
       </main>
 
       {/* Opening Video Overlay (z-[9999]) */}
       {data.openingVideoUrl && (
         <div 
-          className={`absolute inset-0 z-[9999] bg-blush-main flex items-center justify-center ${viewState === 'opening-video' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-0 z-[9999] bg-[#3B0918] flex items-center justify-center ${viewState === 'opening-video' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <video
             ref={openingVideoRef}
@@ -143,7 +160,7 @@ function PublicView() {
       {/* Thumbnail Overlay (z-[9999]) */}
       {data.openingThumbnailUrl && (
         <div 
-          className={`absolute inset-0 z-[9999] bg-blush-main flex flex-col items-center justify-center cursor-pointer transition-opacity duration-700 ${viewState === 'thumbnail' || (viewState === 'opening-video' && !isVideoPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-0 z-[9999] bg-[#3B0918] flex flex-col items-center justify-center cursor-pointer transition-opacity duration-700 ${viewState === 'thumbnail' || (viewState === 'opening-video' && !isVideoPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={handleThumbnailClick}
         >
           <img 
