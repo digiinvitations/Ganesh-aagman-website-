@@ -105,10 +105,17 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
           transition={{ duration: 1.2, delay: 0.6, ease: "easeOut" }}
           className="flex flex-col items-center w-full mb-2"
         >
-          <p className="font-serif text-text-body/90 uppercase tracking-[0.2em] text-[8px] sm:text-[10px] font-semibold mb-6 shadow-black drop-shadow-md text-center leading-relaxed">
-            Grand celebration of completing 14 years of <br />
-            <span className="text-wine-dark font-bold text-[10px] sm:text-[12px]">DARSHAN HEIGHTS YUVA SANGH</span>
-          </p>
+          <div className="mb-8 border-y border-wine-dark/50 py-4 px-2 sm:px-6 bg-black/40 backdrop-blur-sm rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.25)] flex flex-col items-center text-center w-full max-w-[95%]">
+            <p className="font-serif text-[#FDFBF7] uppercase tracking-[0.15em] text-[11px] sm:text-[13px] font-semibold mb-2 drop-shadow-md leading-relaxed">
+              Grand celebration of completing <span className="text-wine-dark font-extrabold text-[13px] sm:text-[15px]">14 Years</span> of
+            </p>
+            <h2 
+              className="font-serif text-wine-dark text-[24px] sm:text-[28px] font-bold tracking-[0.08em] leading-tight"
+              style={{ textShadow: '0 0 15px rgba(212,175,55,0.5), 0 2px 4px rgba(0,0,0,0.8)' }}
+            >
+              DARSHAN HEIGHTS<br />YUVA SANGH
+            </h2>
+          </div>
           
           {/* Scroll Indicator */}
           <div className="flex flex-col items-center opacity-100 cursor-pointer">

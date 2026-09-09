@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { getWeddingData, saveWeddingData, checkTemplateExists } from "../services/db";
 import { WeddingData } from "../types";
-import { Save, Image as ImageIcon, ArrowLeft } from "lucide-react";
+import { Save, Image as ImageIcon, ArrowLeft, Download, Upload } from "lucide-react";
 
 export function AdminPanel() {
   const [searchParams] = useSearchParams();
@@ -118,6 +118,40 @@ export function AdminPanel() {
     setTemplateId(`new remix template ${randomNum}`);
   };
 
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `admin_data_${templateId}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target?.result as string);
+        if (importedData && typeof importedData === 'object') {
+          setData(importedData);
+          alert("Data imported successfully! Make sure to save the changes.");
+        } else {
+          alert("Invalid data format.");
+        }
+      } catch (error) {
+        console.error("Error parsing JSON file:", error);
+        alert("Error parsing JSON file. Please make sure it's a valid JSON.");
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so the same file can be selected again
+    e.target.value = '';
+  };
+
   return (
     <div className="min-h-screen bg-red-50 p-4 md:p-8 font-serif text-red-950">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-10 border border-red-200">
@@ -128,34 +162,50 @@ export function AdminPanel() {
             </Link>
             <h1 className="text-3xl font-serif font-bold text-red-900">Admin Panel</h1>
           </div>
-          <div className="flex items-center gap-4 flex-wrap justify-end">
-            <div className="flex flex-col items-start gap-1">
-              <label className="text-xs font-semibold uppercase tracking-widest text-red-800">Save as Template Name</label>
-              <div className="flex items-center gap-2">
-                <input 
-                  type="text" 
-                  value={templateId} 
-                  onChange={(e) => setTemplateId(e.target.value)}
-                  placeholder="e.g., new remix template 001"
-                  className="bg-white border border-red-300 text-red-900 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 w-64"
-                />
-                <button 
-                  onClick={handleCreateRemix}
-                  title="Generate Remix Name"
-                  className="bg-red-50 text-red-900 px-3 py-2 rounded-md border border-red-300 hover:bg-red-100 transition-colors text-xs font-semibold whitespace-nowrap"
-                >
-                  Auto Name
-                </button>
-              </div>
+          <div className="flex flex-col gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-4 flex-wrap justify-end">
+              <label className="flex items-center gap-2 bg-white text-red-800 px-4 py-2 rounded-md border border-red-300 hover:bg-red-50 transition-colors cursor-pointer text-sm font-semibold shadow-sm">
+                <Upload className="w-4 h-4" />
+                Import JSON
+                <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+              </label>
+              <button 
+                onClick={handleExport}
+                className="flex items-center gap-2 bg-white text-red-800 px-4 py-2 rounded-md border border-red-300 hover:bg-red-50 transition-colors text-sm font-semibold shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                Export JSON
+              </button>
             </div>
-            <button 
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 bg-red-800 text-white px-6 py-2 h-[38px] mt-[20px] rounded-md hover:bg-red-900 transition-colors disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
+            <div className="flex items-center gap-4 flex-wrap justify-end">
+              <div className="flex flex-col items-start gap-1">
+                <label className="text-xs font-semibold uppercase tracking-widest text-red-800">Save as Template Name</label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    value={templateId} 
+                    onChange={(e) => setTemplateId(e.target.value)}
+                    placeholder="e.g., new remix template 001"
+                    className="bg-white border border-red-300 text-red-900 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 w-64"
+                  />
+                  <button 
+                    onClick={handleCreateRemix}
+                    title="Generate Remix Name"
+                    className="bg-red-50 text-red-900 px-3 py-2 rounded-md border border-red-300 hover:bg-red-100 transition-colors text-xs font-semibold whitespace-nowrap"
+                  >
+                    Auto Name
+                  </button>
+                </div>
+              </div>
+              <button 
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 bg-red-800 text-white px-6 py-2 h-[38px] mt-[20px] rounded-md hover:bg-red-900 transition-colors disabled:opacity-50 shadow-sm"
+              >
+                <Save className="w-4 h-4" />
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </div>
         </div>
 
