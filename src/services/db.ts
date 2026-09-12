@@ -5,7 +5,9 @@ import { weddingData as defaultData } from "../data";
 
 const DATA_DOC_ID = "main";
 
-export async function getWeddingData(templateId: string = "main"): Promise<WeddingData> {
+const DEFAULT_TEMPLATE_ID = "ganpati_main";
+
+export async function getWeddingData(templateId: string = DEFAULT_TEMPLATE_ID): Promise<WeddingData> {
   try {
     const docRef = doc(db, "weddingConfig", templateId);
     const docSnap = await getDoc(docRef);
@@ -25,9 +27,19 @@ export async function getWeddingData(templateId: string = "main"): Promise<Weddi
 
       return data;
     } else {
-      // Initialize with default data if none exists and it's the main template
-      if (templateId === "main") {
-        await setDoc(docRef, defaultData);
+      // Initialize with default data if none exists
+      if (templateId === DEFAULT_TEMPLATE_ID) {
+        // Attempt to copy from 'main' to prevent data loss since this project was remixed
+        const mainRef = doc(db, "weddingConfig", "main");
+        const mainSnap = await getDoc(mainRef);
+        if (mainSnap.exists()) {
+          const mainData = mainSnap.data();
+          await setDoc(docRef, mainData);
+          return mainData as WeddingData;
+        } else {
+          await setDoc(docRef, defaultData);
+          return defaultData;
+        }
       }
       return defaultData;
     }

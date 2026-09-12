@@ -7,7 +7,7 @@ import { Save, Image as ImageIcon, ArrowLeft, Download, Upload } from "lucide-re
 export function AdminPanel() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const currentTemplateId = searchParams.get("template") || "main";
+  const currentTemplateId = searchParams.get("template") || "ganpati_main";
   
   const [data, setData] = useState<WeddingData | null>(null);
   const [saving, setSaving] = useState(false);

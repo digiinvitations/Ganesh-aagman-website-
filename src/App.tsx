@@ -21,7 +21,7 @@ import { ParallaxDivider } from './components/ParallaxDivider';
 
 function PublicView() {
   const [searchParams] = useSearchParams();
-  const templateId = searchParams.get('template') || 'main';
+  const templateId = searchParams.get('template') || 'ganpati_main';
 
   const [data, setData] = useState<WeddingData | null>(null);
   const [isPreloading, setIsPreloading] = useState(true);
