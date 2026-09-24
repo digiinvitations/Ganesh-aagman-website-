@@ -99,7 +99,21 @@ function PublicView() {
 
       if (data.ogImageUrl) {
         setMetaTag('property', 'og:image', data.ogImageUrl);
+        setMetaTag('property', 'og:image:secure_url', data.ogImageUrl);
         setMetaTag('name', 'twitter:image', data.ogImageUrl);
+
+        const img = new Image();
+        img.onload = () => {
+          setMetaTag('property', 'og:image:width', String(img.naturalWidth));
+          setMetaTag('property', 'og:image:height', String(img.naturalHeight));
+          const ratio = img.naturalWidth / img.naturalHeight;
+          if (ratio < 1.1) {
+            setMetaTag('name', 'twitter:card', 'summary');
+          } else {
+            setMetaTag('name', 'twitter:card', 'summary_large_image');
+          }
+        };
+        img.src = data.ogImageUrl;
       }
     }
   }, [data]);
