@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { getWeddingData, saveWeddingData, checkTemplateExists } from "../services/db";
 import { WeddingData } from "../types";
-import { Save, Image as ImageIcon, ArrowLeft, Download, Upload } from "lucide-react";
+import { Save, Image as ImageIcon, ArrowLeft, Download, Upload, Plus, Trash2, Share2 } from "lucide-react";
 
 export function AdminPanel() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const currentTemplateId = searchParams.get("template") || "ganpati_main";
+  const currentTemplateId = searchParams.get("template") || "matakichowki_main";
   
   const [data, setData] = useState<WeddingData | null>(null);
   const [saving, setSaving] = useState(false);
@@ -22,15 +22,15 @@ export function AdminPanel() {
     loadData();
   }, [currentTemplateId]);
 
-  if (!data) return <div className="p-8 font-serif">Loading Admin Panel...</div>;
+  if (!data) return <div className="p-8 font-serif text-[#B8141B]">Loading Admin Panel...</div>;
 
   const handleChange = (path: string, value: any) => {
     setData((prev: any) => {
-      // Use structuredClone to safely deep copy the state so we don't mutate prev
-      const updated = JSON.parse(JSON.stringify(prev));
+      const updated = JSON.parse(JSON.stringify(prev || {}));
       const keys = path.split('.');
       let current = updated;
       for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) current[keys[i]] = {};
         current = current[keys[i]];
       }
       current[keys[keys.length - 1]] = value;
@@ -38,23 +38,7 @@ export function AdminPanel() {
     });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64String = event.target?.result as string;
-      setData((prev: any) => {
-        const newGallery = [...prev.gallery];
-        newGallery[index] = base64String;
-        return { ...prev, gallery: newGallery };
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleSingleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+  const handleSingleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -66,21 +50,6 @@ export function AdminPanel() {
     reader.readAsDataURL(file);
   };
 
-  const addImage = () => {
-    setData((prev: any) => ({
-      ...prev,
-      gallery: [...prev.gallery, ""]
-    }));
-  };
-
-  const removeImage = (index: number) => {
-    setData((prev: any) => {
-      const newGallery = [...prev.gallery];
-      newGallery.splice(index, 1);
-      return { ...prev, gallery: newGallery };
-    });
-  };
-
   const handleSave = async () => {
     if (!templateId.trim()) {
       alert("Please provide a valid template name");
@@ -88,7 +57,7 @@ export function AdminPanel() {
     }
     setSaving(true);
     try {
-      const sanitizedTemplateId = templateId.trim();
+      const sanitizedTemplateId = templateId.trim().replace(/\//g, "-");
       
       // If saving to a NEW template name, check if it already exists to prevent overwriting
       if (sanitizedTemplateId !== currentTemplateId) {
@@ -101,7 +70,7 @@ export function AdminPanel() {
       }
 
       await saveWeddingData(sanitizedTemplateId, data);
-      alert("Settings saved successfully!");
+      alert("Mata Ki Chowki settings saved successfully!");
       if (sanitizedTemplateId !== currentTemplateId) {
         navigate(`/admin?template=${encodeURIComponent(sanitizedTemplateId)}`);
       }
@@ -115,14 +84,14 @@ export function AdminPanel() {
 
   const handleCreateRemix = () => {
     const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    setTemplateId(`new remix template ${randomNum}`);
+    setTemplateId(`matakichowki_remix_${randomNum}`);
   };
 
   const handleExport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `admin_data_${templateId}.json`);
+    downloadAnchorNode.setAttribute("download", `mata_ki_chowki_${templateId}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -138,71 +107,82 @@ export function AdminPanel() {
         const importedData = JSON.parse(event.target?.result as string);
         if (importedData && typeof importedData === 'object') {
           setData(importedData);
-          alert("Data imported successfully! Make sure to save the changes.");
+          alert("Data imported successfully! Make sure to click 'Save Changes' to update Firestore.");
         } else {
           alert("Invalid data format.");
         }
       } catch (error) {
         console.error("Error parsing JSON file:", error);
-        alert("Error parsing JSON file. Please make sure it's a valid JSON.");
+        alert("Error parsing JSON file. Please ensure it is valid JSON.");
       }
     };
     reader.readAsText(file);
-    // Reset input so the same file can be selected again
     e.target.value = '';
   };
 
   return (
-    <div className="min-h-screen bg-red-50 p-4 md:p-8 font-serif text-red-950">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-10 border border-red-200">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-red-200 pb-4 gap-4">
+    <div className="min-h-screen bg-[#FDF0F4] p-4 md:p-8 font-serif text-[#3C1B26]">
+      <div className="max-w-4xl mx-auto bg-[#FFFDF7] rounded-2xl shadow-xl p-6 md:p-10 border-2 border-[#D4AF37]/50">
+        
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-[#F3C3D2] pb-6 gap-4">
           <div className="flex items-center gap-4">
-            <Link to={`/?template=${encodeURIComponent(currentTemplateId)}`} className="flex items-center gap-2 text-red-900 hover:text-red-700 bg-red-50 px-3 py-1.5 rounded-full border border-red-200 transition-colors text-sm font-semibold">
-              <ArrowLeft className="w-4 h-4" /> Go Back
+            <Link 
+              to={`/?template=${encodeURIComponent(currentTemplateId)}`} 
+              className="flex items-center gap-2 text-[#B8141B] hover:text-[#9E0E15] bg-[#FAF2F5] px-3.5 py-1.5 rounded-full border border-[#D4AF37]/50 transition-colors text-xs uppercase font-bold"
+            >
+              <ArrowLeft className="w-4 h-4" /> View Site
             </Link>
-            <h1 className="text-3xl font-serif font-bold text-red-900">Admin Panel</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#B8141B]">Mata Ki Chowki Admin</h1>
           </div>
+
           <div className="flex flex-col gap-3 w-full sm:w-auto">
-            <div className="flex items-center gap-4 flex-wrap justify-end">
-              <label className="flex items-center gap-2 bg-white text-red-800 px-4 py-2 rounded-md border border-red-300 hover:bg-red-50 transition-colors cursor-pointer text-sm font-semibold shadow-sm">
-                <Upload className="w-4 h-4" />
+            <div className="flex items-center gap-3 flex-wrap justify-end">
+              <label className="flex items-center gap-2 bg-[#FAF2F5] text-[#B8141B] px-4 py-2 rounded-xl border border-[#D4AF37]/50 hover:bg-[#FCE6ED] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                <Upload className="w-4 h-4 text-[#E65100]" />
                 Import JSON
                 <input type="file" accept=".json" onChange={handleImport} className="hidden" />
               </label>
+              
               <button 
                 onClick={handleExport}
-                className="flex items-center gap-2 bg-white text-red-800 px-4 py-2 rounded-md border border-red-300 hover:bg-red-50 transition-colors text-sm font-semibold shadow-sm"
+                className="flex items-center gap-2 bg-[#FAF2F5] text-[#B8141B] px-4 py-2 rounded-xl border border-[#D4AF37]/50 hover:bg-[#FCE6ED] transition-colors text-xs uppercase font-bold shadow-sm cursor-pointer"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-[#E65100]" />
                 Export JSON
               </button>
             </div>
-            <div className="flex items-center gap-4 flex-wrap justify-end">
+
+            {/* Template Selector & Saver */}
+            <div className="flex items-center gap-3 flex-wrap justify-end">
               <div className="flex flex-col items-start gap-1">
-                <label className="text-xs font-semibold uppercase tracking-widest text-red-800">Save as Template Name</label>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B]">
+                  Firestore Template ID
+                </label>
                 <div className="flex items-center gap-2">
                   <input 
                     type="text" 
                     value={templateId} 
                     onChange={(e) => setTemplateId(e.target.value)}
-                    placeholder="e.g., new remix template 001"
-                    className="bg-white border border-red-300 text-red-900 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 w-64"
+                    placeholder="e.g. matakichowki_main"
+                    className="bg-[#FAF2F5] border border-[#F3C3D2] text-[#3C1B26] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#B8141B] w-52 sm:w-60"
                   />
                   <button 
                     onClick={handleCreateRemix}
-                    title="Generate Remix Name"
-                    className="bg-red-50 text-red-900 px-3 py-2 rounded-md border border-red-300 hover:bg-red-100 transition-colors text-xs font-semibold whitespace-nowrap"
+                    title="Generate New Remix ID"
+                    className="bg-[#FAF2F5] text-[#B8141B] px-3 py-2 rounded-xl border border-[#D4AF37]/50 hover:bg-[#FCE6ED] transition-colors text-[10px] uppercase font-bold"
                   >
-                    Auto Name
+                    New Remix
                   </button>
                 </div>
               </div>
+
               <button 
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 bg-red-800 text-white px-6 py-2 h-[38px] mt-[20px] rounded-md hover:bg-red-900 transition-colors disabled:opacity-50 shadow-sm"
+                className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-6 py-2.5 rounded-xl hover:bg-[#9E0E15] transition-colors disabled:opacity-50 shadow-md text-xs uppercase font-bold mt-4 cursor-pointer"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 text-[#FFBF00]" />
                 {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
@@ -210,288 +190,364 @@ export function AdminPanel() {
         </div>
 
         <div className="space-y-8">
-          {/* Couple Details */}
-          <section>
-            <h2 className="text-xl font-bold text-red-900 mb-4">Host Details</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-200">
-                <h3 className="font-bold text-red-900">Host 1</h3>
-                <Input label="Name" value={data.groom.name} onChange={(v) => handleChange("groom.name", v)} />
-                <Input label="Details 1" value={data.groom.parents} onChange={(v) => handleChange("groom.parents", v)} />
-                <Input label="Details 2" value={data.groom.education} onChange={(v) => handleChange("groom.education", v)} />
-                <Input label="Details 3" value={data.groom.profession} onChange={(v) => handleChange("groom.profession", v)} />
-              </div>
-              <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-200">
-                <h3 className="font-bold text-red-900">Host 2</h3>
-                <Input label="Name" value={data.bride.name} onChange={(v) => handleChange("bride.name", v)} />
-                <Input label="Details 1" value={data.bride.parents} onChange={(v) => handleChange("bride.parents", v)} />
-                <Input label="Details 2" value={data.bride.education} onChange={(v) => handleChange("bride.education", v)} />
-                <Input label="Details 3" value={data.bride.profession} onChange={(v) => handleChange("bride.profession", v)} />
-              </div>
-            </div>
-          </section>
+          
+          {/* SECTION: HERO SECTION IMAGE (HD / 4K) */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border-2 border-[#D4AF37]/60 shadow-sm">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span>🖼️</span> Hero Section Image (HD / 4K)
+            </h2>
+            <p className="text-xs text-[#7A4B5B] font-serif mb-4">
+              Upload your custom high-resolution Mata Ki Chowki image or enter a direct image URL. This image will fill the entire hero screen without any text overlays.
+            </p>
 
-          {/* Event Details */}
-          <section>
-             <h2 className="text-xl font-bold text-red-900 mb-4">Event Date & Time</h2>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-red-50 p-4 rounded-lg border border-red-200">
-                <Input label="Target Date (Countdown ISO)" value={data.weddingDate} onChange={(v) => handleChange("weddingDate", v)} type="datetime-local" />
-                <Input label="Formatted Date" value={data.weddingDateFormatted} onChange={(v) => handleChange("weddingDateFormatted", v)} />
-                <Input label="Formatted Time" value={data.weddingTimeFormatted} onChange={(v) => handleChange("weddingTimeFormatted", v)} />
-                <Input label="Day of Week" value={data.weddingDayFormatted} onChange={(v) => handleChange("weddingDayFormatted", v)} />
-             </div>
-          </section>
-
-          {/* Messages */}
-          <section>
-             <h2 className="text-xl font-bold text-red-900 mb-4">Messages & Text</h2>
-             <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-200">
-               <TextArea label="Hero Message" value={data.heroMessage} onChange={(v) => handleChange("heroMessage", v)} />
-               <TextArea label="Invitation Message" value={data.invitationMessage} onChange={(v) => handleChange("invitationMessage", v)} />
-               <TextArea label="Transportation Details" value={data.transportation} onChange={(v) => handleChange("transportation", v)} />
-               <Input label="Dress Code" value={data.dressCode} onChange={(v) => handleChange("dressCode", v)} />
-               <TextArea label="Closing Message" value={data.closingMessage} onChange={(v) => handleChange("closingMessage", v)} />
-             </div>
-          </section>
-
-          {/* Media Settings */}
-          <section>
-            <h2 className="text-xl font-bold text-red-900 mb-4">Events</h2>
             <div className="space-y-4">
-              {data.events.map((event, idx) => (
-                <div key={event.id || idx} className="bg-red-50 p-4 rounded-lg border border-red-200 space-y-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-bold text-red-900">Event {idx + 1}</h3>
-                    <button onClick={() => {
-                      const newEvents = [...data.events];
-                      newEvents.splice(idx, 1);
-                      handleChange("events", newEvents);
-                    }} className="text-red-500 hover:bg-red-50 px-3 py-1 rounded-md text-sm">Remove</button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Event Title" value={event.title} onChange={(v) => handleChange(`events.${idx}.title`, v)} />
-                    <Input label="Subtitle" value={event.subtitle || ""} onChange={(v) => handleChange(`events.${idx}.subtitle`, v)} placeholder="e.g. PLEASE JOIN US FOR..." />
-                    <Input label="Hashtag" value={event.hashtag || ""} onChange={(v) => handleChange(`events.${idx}.hashtag`, v)} placeholder="e.g. #SunMeetsSky" />
-                    <Input label="Date" value={event.date} type="date" onChange={(v) => handleChange(`events.${idx}.date`, v)} />
-                    <Input label="Time (e.g., 7:00 PM)" value={event.time} onChange={(v) => handleChange(`events.${idx}.time`, v)} />
-                    <Input label="Location Name" value={event.location} onChange={(v) => handleChange(`events.${idx}.location`, v)} />
-                    <TextArea label="Description" value={event.description || ""} onChange={(v) => handleChange(`events.${idx}.description`, v)} />
-                    <Input label="Map Link (URL)" value={event.mapUrl || ""} onChange={(v) => handleChange(`events.${idx}.mapUrl`, v)} />
-                    
-                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-pink-border/50 pt-4 mt-2">
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold uppercase tracking-widest opacity-70">Background Image URL</label>
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={(e) => handleSingleImageUpload(e, `events.${idx}.backgroundUrl`)}
-                          className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-burgundy file:text-white hover:file:bg-wine-dark cursor-pointer mb-2"
-                        />
-                        <input type="text" value={event.backgroundUrl || ""} onChange={(e) => handleChange(`events.${idx}.backgroundUrl`, e.target.value)} placeholder="Or paste URL" className="w-full bg-white border border-pink-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pink-accent" />
-                        {event.backgroundUrl && <img src={event.backgroundUrl} className="w-16 h-24 object-cover rounded-md mt-1" />}
-                      </div>
+              <Input 
+                label="Hero Image URL (Direct Link)" 
+                value={data.heroImageUrl || ""} 
+                onChange={(v) => handleChange("heroImageUrl", v)} 
+                placeholder="https://example.com/my-4k-hero-image.jpg"
+              />
 
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold uppercase tracking-widest opacity-70">Logo URL</label>
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={(e) => handleSingleImageUpload(e, `events.${idx}.logoUrl`)}
-                          className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-burgundy file:text-white hover:file:bg-wine-dark cursor-pointer mb-2"
-                        />
-                        <input type="text" value={event.logoUrl || ""} onChange={(e) => handleChange(`events.${idx}.logoUrl`, e.target.value)} placeholder="Or paste URL" className="w-full bg-white border border-pink-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pink-accent" />
-                        {event.logoUrl && <img src={event.logoUrl} className="w-12 h-12 object-contain rounded-md mt-1" />}
-                      </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-4 py-2.5 rounded-xl hover:bg-[#9E0E15] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                  <ImageIcon className="w-4 h-4 text-[#FFBF00]" />
+                  Upload HD / 4K Image File
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleSingleFileUpload(e, "heroImageUrl")} 
+                    className="hidden" 
+                  />
+                </label>
 
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold uppercase tracking-widest opacity-70">Caricature URL</label>
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={(e) => handleSingleImageUpload(e, `events.${idx}.caricatureUrl`)}
-                          className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-burgundy file:text-white hover:file:bg-wine-dark cursor-pointer mb-2"
-                        />
-                        <input type="text" value={event.caricatureUrl || ""} onChange={(e) => handleChange(`events.${idx}.caricatureUrl`, e.target.value)} placeholder="Or paste URL" className="w-full bg-white border border-pink-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pink-accent" />
-                        {event.caricatureUrl && <img src={event.caricatureUrl} className="w-16 h-16 object-contain rounded-md mt-1" />}
-                      </div>
+                {data.heroImageUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => handleChange("heroImageUrl", "")}
+                    className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 bg-[#FFFDF7] border border-red-200 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Remove Image
+                  </button>
+                )}
+              </div>
 
-                      <div className="flex flex-col gap-1">
-                        <label className="text-xs font-semibold uppercase tracking-widest opacity-70">Timeline Circular Image</label>
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={(e) => handleSingleImageUpload(e, `events.${idx}.circularImageUrl`)}
-                          className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-burgundy file:text-white hover:file:bg-wine-dark cursor-pointer mb-2"
-                        />
-                        <input type="text" value={event.circularImageUrl || ""} onChange={(e) => handleChange(`events.${idx}.circularImageUrl`, e.target.value)} placeholder="Or paste URL" className="w-full bg-white border border-pink-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pink-accent" />
-                        {event.circularImageUrl && <img src={event.circularImageUrl} className="w-16 h-16 object-cover rounded-full mt-1 border border-pink-border" />}
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-pink-border/50 pt-4 mt-2">
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showTitle !== false} onChange={(e) => handleChange(`events.${idx}.showTitle`, e.target.checked)} /> Show Title</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showSubtitle !== false} onChange={(e) => handleChange(`events.${idx}.showSubtitle`, e.target.checked)} /> Show Subtitle</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showHashtag !== false} onChange={(e) => handleChange(`events.${idx}.showHashtag`, e.target.checked)} /> Show Hashtag</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showDate !== false} onChange={(e) => handleChange(`events.${idx}.showDate`, e.target.checked)} /> Show Date</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showTime !== false} onChange={(e) => handleChange(`events.${idx}.showTime`, e.target.checked)} /> Show Time</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showLocation !== false} onChange={(e) => handleChange(`events.${idx}.showLocation`, e.target.checked)} /> Show Location</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showDescription !== false} onChange={(e) => handleChange(`events.${idx}.showDescription`, e.target.checked)} /> Show Description</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showLogo !== false} onChange={(e) => handleChange(`events.${idx}.showLogo`, e.target.checked)} /> Show Logo</label>
-                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={event.showCaricature !== false} onChange={(e) => handleChange(`events.${idx}.showCaricature`, e.target.checked)} /> Show Caricature</label>
-                    </div>
-
-                    <div className="md:col-span-2">
-                       <label className="text-xs font-semibold uppercase tracking-widest opacity-70">Decorative Style (Particles/Colors)</label>
-                       <select value={event.decorativeStyle || "none"} onChange={(e) => handleChange(`events.${idx}.decorativeStyle`, e.target.value)} className="w-full mt-1 bg-white border border-pink-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pink-accent">
-                         <option value="none">None (Clean overlay)</option>
-                         <option value="haldi">Haldi (Yellow / Gold / Floral)</option>
-                         <option value="mehndi">Mehndi (Green / Emerald)</option>
-                         <option value="sangeet">Sangeet (Purple / Indigo)</option>
-                         <option value="wedding">Wedding (Burgundy / Royal)</option>
-                       </select>
-                    </div>
+              {/* Live Preview Box */}
+              {data.heroImageUrl ? (
+                <div className="mt-3 p-3 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/40">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
+                    Current Hero Image Preview:
+                  </span>
+                  <div className="relative w-full max-w-xs aspect-[9/16] max-h-72 rounded-lg overflow-hidden border border-[#F3C3D2] shadow-inner bg-black/5">
+                    <img 
+                      src={data.heroImageUrl} 
+                      alt="Hero Preview" 
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
                 </div>
-              ))}
-              <button onClick={() => {
-                const newEvent = {
-                  id: Date.now().toString(),
-                  title: "New Event",
-                  date: "",
-                  time: "",
-                  location: "",
-                  videoUrl: "",
-                  mapUrl: ""
-                };
-                handleChange("events", [...data.events, newEvent]);
-              }} className="text-red-900 hover:bg-red-100 px-4 py-2 rounded-md border border-red-300 w-full text-center">
-                + Add Event
-              </button>
+              ) : (
+                <div className="p-3 bg-[#FFFDF7] rounded-xl border border-dashed border-[#D4AF37]/50 text-xs text-[#7A4B5B] italic">
+                  No custom hero image uploaded yet. (A high quality devotional default image is currently displayed on the hero section).
+                </div>
+              )}
             </div>
           </section>
 
-          {/* Timeline Settings */}
-          <section>
-            <h2 className="text-xl font-bold text-red-900 mb-4">Timeline</h2>
+          {/* SECTION: OPEN GRAPH (OG IMAGE) / SOCIAL SHARE CARD */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border-2 border-[#D4AF37]/60 shadow-sm">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-[#E65100]" />
+              Social Share Image (OG Image / WhatsApp Card)
+            </h2>
+            <p className="text-xs text-[#7A4B5B] font-serif mb-4">
+              When you share this invitation link on <strong>WhatsApp, Facebook, iMessage, Twitter/X, or Instagram</strong>, this preview image and card appear.
+              <br />
+              <strong>Recommended Dimensions:</strong> 1200 × 630 px (Landscape 1.91:1 ratio) or any crisp HD photo.
+            </p>
+
             <div className="space-y-4">
-              {data.timeline?.map((item, idx) => (
-                <div key={item.id || idx} className="bg-red-50 p-4 rounded-lg border border-red-200 space-y-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-bold text-red-900">Timeline Item {idx + 1}</h3>
-                    <button onClick={() => {
-                      const newTimeline = [...(data.timeline || [])];
-                      newTimeline.splice(idx, 1);
-                      handleChange("timeline", newTimeline);
-                    }} className="text-red-500 hover:bg-red-50 px-3 py-1 rounded-md text-sm">Remove</button>
+              <Input 
+                label="OG Image URL (Direct Link)" 
+                value={data.ogImageUrl || ""} 
+                onChange={(v) => handleChange("ogImageUrl", v)} 
+                placeholder="https://example.com/social-share-image.jpg"
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-4 py-2.5 rounded-xl hover:bg-[#9E0E15] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                  <ImageIcon className="w-4 h-4 text-[#FFBF00]" />
+                  Upload OG Image File
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleSingleFileUpload(e, "ogImageUrl")} 
+                    className="hidden" 
+                  />
+                </label>
+
+                {data.ogImageUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => handleChange("ogImageUrl", "")}
+                    className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 bg-[#FFFDF7] border border-red-200 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Remove OG Image
+                  </button>
+                )}
+              </div>
+
+              {/* WhatsApp / Social Share Card Mockup Preview */}
+              <div className="mt-4 p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 max-w-md">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
+                  Social Share Preview Card (WhatsApp / Facebook / iMessage):
+                </span>
+                
+                <div className="rounded-xl overflow-hidden border border-[#F3C3D2] shadow-sm bg-[#FAF2F5]">
+                  <div className="w-full aspect-[1.91/1] bg-black/10 relative overflow-hidden flex items-center justify-center">
+                    {data.ogImageUrl ? (
+                      <img 
+                        src={data.ogImageUrl} 
+                        alt="OG Preview" 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center gap-1 text-[#7A4B5B] p-4 text-center">
+                        <span className="text-2xl">🪔</span>
+                        <span className="text-xs font-serif italic">Default Divine Mata Ki Chowki Cover</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Title" value={item.title} onChange={(v) => handleChange(`timeline.${idx}.title`, v)} />
-                    <Input label="Hashtag" value={item.hashtag || ""} onChange={(v) => handleChange(`timeline.${idx}.hashtag`, v)} />
-                    <Input label="Date" value={item.date} onChange={(v) => handleChange(`timeline.${idx}.date`, v)} />
-                    <Input label="Day" value={item.day || ""} onChange={(v) => handleChange(`timeline.${idx}.day`, v)} />
-                    <Input label="Time" value={item.time} onChange={(v) => handleChange(`timeline.${idx}.time`, v)} />
-                    <Input label="Location" value={item.location || ""} onChange={(v) => handleChange(`timeline.${idx}.location`, v)} />
-                    
-                    <div className="md:col-span-2">
-                      <Input label="Background Image URL" value={item.imageUrl || ""} onChange={(v) => handleChange(`timeline.${idx}.imageUrl`, v)} />
-                      <p className="text-xs text-red-800 opacity-70 mt-1">Optional. Adds a decorative background to the event card.</p>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <Input label="Event Custom Logo URL" value={item.logoUrl || ""} onChange={(v) => handleChange(`timeline.${idx}.logoUrl`, v)} />
-                      <p className="text-xs text-red-800 opacity-70 mt-1">Optional. Leave empty to use the universal global logo.</p>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <TextArea label="Description" value={item.description || ""} onChange={(v) => handleChange(`timeline.${idx}.description`, v)} />
-                    </div>
+                  
+                  <div className="p-3 bg-[#FFFDF7] border-t border-[#F3C3D2]">
+                    <span className="text-[10px] text-[#7A4B5B] uppercase tracking-wider block font-semibold">
+                      INVITATION PREVIEW
+                    </span>
+                    <h4 className="font-serif font-bold text-sm text-[#B8141B] line-clamp-1 mt-0.5">
+                      Mata Ki Chowki Invitation | Karoli Wali Mata
+                    </h4>
+                    <p className="text-[11px] text-[#3C1B26] line-clamp-2 mt-1 leading-snug">
+                      With immense devotion and heartfelt joy, the Goyal Family cordially invites you to Mata Ki Chowki on 24 October 2026 at Krishna Palace, Agra.
+                    </p>
                   </div>
                 </div>
-              ))}
-              <button onClick={() => {
-                const newItem = {
-                  id: Date.now().toString(),
-                  title: "New Timeline Item",
-                  date: "",
-                  day: "",
-                  time: "",
-                  location: "",
-                  hashtag: "",
-                  description: "",
-                  imageUrl: "",
-                  logoUrl: ""
-                };
-                handleChange("timeline", [...(data.timeline || []), newItem]);
-              }} className="text-red-900 hover:bg-red-100 px-4 py-2 rounded-md border border-red-300 w-full text-center">
-                + Add Timeline Item
-              </button>
-            </div>
-          </section>
-
-          {/* Media Settings */}
-          <section>
-            <h2 className="text-xl font-bold text-red-900 mb-4">Media Settings</h2>
-            <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-200">
-              
-              <div className="flex flex-col gap-2">
-                <h3 className="font-bold text-red-900">Opening Thumbnail (Click to Enter)</h3>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => handleSingleImageUpload(e, 'openingThumbnailUrl')}
-                  className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-800 file:text-white hover:file:bg-red-900 cursor-pointer text-red-900"
-                />
-                <Input label="Or Thumbnail URL" value={data.openingThumbnailUrl || ""} onChange={(v) => handleChange("openingThumbnailUrl", v)} />
-                {data.openingThumbnailUrl && <img src={data.openingThumbnailUrl} className="w-24 h-24 object-cover rounded-md mt-2" />}
-              </div>
-
-              <div className="flex flex-col gap-2 border-t border-red-200 pt-4">
-                <h3 className="font-bold text-red-900">Universal Event Logo</h3>
-                <p className="text-xs text-red-800 opacity-70">This logo will automatically apply to ALL events in the 7 Days Celebration Journey section.</p>
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => handleSingleImageUpload(e, 'globalLogo')}
-                  className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-800 file:text-white hover:file:bg-red-900 cursor-pointer text-red-900"
-                />
-                <Input label="Or Logo URL" value={data.globalLogo || ""} onChange={(v) => handleChange("globalLogo", v)} />
-                {data.globalLogo && <img src={data.globalLogo} className="w-24 h-24 object-contain rounded-md mt-2" />}
-              </div>
-
-              <div className="flex flex-col gap-2 border-t border-red-200 pt-4">
-                <h3 className="font-bold text-red-900">Opening Video</h3>
-                <p className="text-xs text-red-800 opacity-70">Plays immediately after clicking the thumbnail. Must be a direct URL (e.g., .mp4).</p>
-                <Input label="Video URL" value={data.openingVideoUrl || ""} onChange={(v) => handleChange("openingVideoUrl", v)} />
-              </div>
-
-              <div className="flex flex-col gap-2 border-t border-red-200 pt-4">
-                <h3 className="font-bold text-red-900">OG Image URL (Social Sharing Preview)</h3>
-                <p className="text-xs text-red-800 opacity-70">Image shown when sharing the link on WhatsApp, Facebook, etc. Direct URL.</p>
-                <Input label="OG Image URL" value={data.ogImageUrl || ""} onChange={(v) => handleChange("ogImageUrl", v)} />
-              </div>
-
-              <div className="flex flex-col gap-2 border-t border-red-200 pt-4">
-                <h3 className="font-bold text-red-900">Hero Section Video</h3>
-                <p className="text-xs text-red-800 opacity-70">Background video for the first section. Must be a direct URL (e.g., .mp4).</p>
-                <Input label="Hero Video URL" value={data.heroVideoUrl || ""} onChange={(v) => handleChange("heroVideoUrl", v)} />
-              </div>
-
-              <div className="flex flex-col gap-2 border-t border-red-200 pt-4">
-                <h3 className="font-bold text-red-900">Background Music</h3>
-                <p className="text-xs text-red-800 opacity-70">Direct link to an audio file (e.g., .mp3) to play in the background.</p>
-                <Input label="Music URL" value={data.musicUrl || ""} onChange={(v) => handleChange("musicUrl", v)} />
               </div>
             </div>
           </section>
 
-          {/* Venue Settings */}
-          <section>
-            <h2 className="text-xl font-bold text-red-900 mb-4">Venue Details</h2>
-            <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-200">
-              <Input label="Venue Name" value={data.venue.name} onChange={(v) => handleChange("venue.name", v)} />
-              <Input label="Address Line 1" value={data.venue.addressLine1} onChange={(v) => handleChange("venue.addressLine1", v)} />
-              <Input label="Address Line 2" value={data.venue.addressLine2} onChange={(v) => handleChange("venue.addressLine2", v)} />
-              <Input label="Google Maps URL" value={data.venue.mapUrl} onChange={(v) => handleChange("venue.mapUrl", v)} />
+          {/* SECTION: FAMILY INVITATION */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>🪔</span> Section 2: Family Invitation
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input 
+                label="Elder 1" 
+                value={data.familyMembers?.elder1 || ""} 
+                onChange={(v) => handleChange("familyMembers.elder1", v)} 
+                placeholder="AJIT KUMAR GOYAL"
+              />
+              <Input 
+                label="Elder 2" 
+                value={data.familyMembers?.elder2 || ""} 
+                onChange={(v) => handleChange("familyMembers.elder2", v)} 
+                placeholder="MAMTA AGARWAL"
+              />
+              <Input 
+                label="Elder 3" 
+                value={data.familyMembers?.elder3 || ""} 
+                onChange={(v) => handleChange("familyMembers.elder3", v)} 
+                placeholder="VIJAY RANI"
+              />
+              <Input 
+                label="Family Name" 
+                value={data.familyMembers?.familyName || ""} 
+                onChange={(v) => handleChange("familyMembers.familyName", v)} 
+                placeholder="THE GOYAL FAMILY"
+              />
+            </div>
+          </section>
+
+          {/* SECTION: DEVI SHRINE (SECTION 5) */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-1 flex items-center gap-2">
+              <span>🔔</span> Section 5: Karoli Wali Mata Shrine
+            </h2>
+            <p className="text-xs text-[#7A4B5B] font-serif mb-4">
+              <strong>Recommended Dimensions:</strong> 4:5 Portrait ratio (e.g., <strong>800 × 1000 px</strong> or <strong>1080 × 1350 px</strong>). The photo sits inside the sacred temple arch.
+            </p>
+            <div className="space-y-4">
+              <Input 
+                label="Devi Name" 
+                value={data.deviName || "KAROLI WALI MATA"} 
+                onChange={(v) => handleChange("deviName", v)} 
+              />
+              <div className="space-y-2">
+                <Input 
+                  label="Devi Shrine Image URL" 
+                  value={data.deviImageUrl || ""} 
+                  onChange={(v) => handleChange("deviImageUrl", v)} 
+                  placeholder="https://..."
+                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="flex items-center gap-2 bg-[#FFFDF7] text-[#B8141B] px-4 py-2 rounded-xl border border-[#D4AF37]/50 hover:bg-[#FCE6ED] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                    <ImageIcon className="w-4 h-4 text-[#E65100]" />
+                    Upload Mata Image File
+                    <input type="file" accept="image/*" onChange={(e) => handleSingleFileUpload(e, "deviImageUrl")} className="hidden" />
+                  </label>
+                  {data.deviImageUrl && (
+                    <button 
+                      type="button"
+                      onClick={() => handleChange("deviImageUrl", "")}
+                      className="text-xs text-red-600 hover:text-red-800 bg-[#FFFDF7] border border-red-200 px-3 py-1.5 rounded-lg font-semibold"
+                    >
+                      Clear Image
+                    </button>
+                  )}
+                </div>
+
+                {/* Mata Photo Preview */}
+                {data.deviImageUrl && (
+                  <div className="mt-3 p-3 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/40 max-w-xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
+                      Mata Photo Preview (Arch Frame):
+                    </span>
+                    <div className="w-36 aspect-[4/5] rounded-t-[30px] rounded-b-lg overflow-hidden border-2 border-[#D4AF37]/60 shadow-sm mx-auto bg-[#FFF5F8]">
+                      <img 
+                        src={data.deviImageUrl} 
+                        alt="Devi Shrine Preview" 
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: EVENT DATE & TIME */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>📅</span> Section 1 & 6: Event Date & Countdown
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input 
+                label="Countdown Target (ISO format)" 
+                value={data.weddingDate} 
+                onChange={(v) => handleChange("weddingDate", v)} 
+                type="datetime-local" 
+              />
+              <Input 
+                label="Formatted Date" 
+                value={data.weddingDateFormatted} 
+                onChange={(v) => handleChange("weddingDateFormatted", v)} 
+              />
+              <Input 
+                label="Formatted Time" 
+                value={data.weddingTimeFormatted} 
+                onChange={(v) => handleChange("weddingTimeFormatted", v)} 
+              />
+              <Input 
+                label="Day of Week" 
+                value={data.weddingDayFormatted} 
+                onChange={(v) => handleChange("weddingDayFormatted", v)} 
+              />
+            </div>
+          </section>
+
+          {/* SECTION: VENUE */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>📍</span> Section 7: Venue
+            </h2>
+            <div className="space-y-4">
+              <Input 
+                label="Venue Name" 
+                value={data.venue?.name || ""} 
+                onChange={(v) => handleChange("venue.name", v)} 
+              />
+              <Input 
+                label="Address Line 1" 
+                value={data.venue?.addressLine1 || ""} 
+                onChange={(v) => handleChange("venue.addressLine1", v)} 
+              />
+              <Input 
+                label="Address Line 2 (Landmark)" 
+                value={data.venue?.addressLine2 || ""} 
+                onChange={(v) => handleChange("venue.addressLine2", v)} 
+              />
+              <Input 
+                label="Google Maps URL" 
+                value={data.venue?.mapUrl || ""} 
+                onChange={(v) => handleChange("venue.mapUrl", v)} 
+              />
+            </div>
+          </section>
+
+          {/* SECTION: CONTACT */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>📞</span> Section 9: Contact
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input 
+                label="Contact Person Name" 
+                value={data.contactPerson?.name || ""} 
+                onChange={(v) => handleChange("contactPerson.name", v)} 
+              />
+              <Input 
+                label="Contact Mobile Number" 
+                value={data.contactPerson?.phone || ""} 
+                onChange={(v) => handleChange("contactPerson.phone", v)} 
+              />
+            </div>
+          </section>
+
+          {/* SECTION: MEDIA */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>🎬</span> Opening & Background Media
+            </h2>
+            <div className="space-y-4">
+              <Input 
+                label="Opening Thumbnail URL (Optional popup before entry)" 
+                value={data.openingThumbnailUrl || ""} 
+                onChange={(v) => handleChange("openingThumbnailUrl", v)} 
+                placeholder="https://..."
+              />
+              <Input 
+                label="Opening Video URL (Optional video before entry)" 
+                value={data.openingVideoUrl || ""} 
+                onChange={(v) => handleChange("openingVideoUrl", v)} 
+              />
+              <Input 
+                label="Hero Video URL (Optional video replacement for hero)" 
+                value={data.heroVideoUrl || ""} 
+                onChange={(v) => handleChange("heroVideoUrl", v)} 
+              />
+              <Input 
+                label="Devotional Music MP3 URL" 
+                value={data.musicUrl || ""} 
+                onChange={(v) => handleChange("musicUrl", v)} 
+              />
+            </div>
+          </section>
+
+          {/* SECTION: TEXT & MESSAGES */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
+              <span>✍️</span> Messages & Blessings
+            </h2>
+            <div className="space-y-4">
+              <TextArea 
+                label="Invitation Message" 
+                value={data.invitationMessage || ""} 
+                onChange={(v) => handleChange("invitationMessage", v)} 
+              />
+              <TextArea 
+                label="Closing Message" 
+                value={data.closingMessage || ""} 
+                onChange={(v) => handleChange("closingMessage", v)} 
+              />
             </div>
           </section>
 
@@ -501,30 +557,31 @@ export function AdminPanel() {
   );
 }
 
-function Input({ label, value, onChange, type = "text", placeholder }: { label: string, value: string, onChange: (v: string) => void, type?: string, placeholder?: string }) {
+function Input({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold uppercase tracking-widest text-red-800 opacity-70">{label}</label>
-      <input 
+      <label className="text-xs font-bold uppercase tracking-wider text-[#B8141B]">{label}</label>
+      <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full bg-white border border-red-300 text-red-900 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+        className="w-full bg-[#FFFDF7] border border-[#F3C3D2] rounded-xl px-4 py-2.5 text-sm text-[#3C1B26] focus:outline-none focus:border-[#B8141B] focus:ring-1 focus:ring-[#B8141B] transition-colors"
       />
     </div>
   );
 }
 
-function TextArea({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
+function TextArea({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold uppercase tracking-widest text-red-800 opacity-70">{label}</label>
-      <textarea 
-        rows={4}
+      <label className="text-xs font-bold uppercase tracking-wider text-[#B8141B]">{label}</label>
+      <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-white border border-red-300 text-red-900 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 resize-y"
+        placeholder={placeholder}
+        rows={3}
+        className="w-full bg-[#FFFDF7] border border-[#F3C3D2] rounded-xl px-4 py-2.5 text-sm text-[#3C1B26] focus:outline-none focus:border-[#B8141B] focus:ring-1 focus:ring-[#B8141B] transition-colors resize-none"
       />
     </div>
   );

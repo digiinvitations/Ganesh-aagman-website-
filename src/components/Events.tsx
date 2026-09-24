@@ -1,160 +1,135 @@
-import React from "react";
 import { motion } from "motion/react";
-import { HeartDivider } from "./HeartDivider";
 import { EventDetails } from "../types";
-import { Calendar, MapPin } from "lucide-react";
-import { FloatingLanterns } from "./FloatingLanterns";
+import { Calendar, Clock, MapPin, Sparkles } from "lucide-react";
 
 interface EventsProps {
-  events: EventDetails[];
+  events?: EventDetails[];
   globalLogo?: string;
 }
 
-// Map decorative styles to specific colors for particles/overlays
-const themeMap: Record<string, { particle: string; text: string; border: string }> = {
-  haldi: { particle: "#D4AF37", text: "text-[#D4AF37]", border: "border-[#D4AF37]/40" },
-  mehndi: { particle: "#D4AF37", text: "text-[#D4AF37]", border: "border-[#D4AF37]/40" },
-  sangeet: { particle: "#D4AF37", text: "text-[#D4AF37]", border: "border-[#D4AF37]/40" },
-  wedding: { particle: "#D4AF37", text: "text-[#D4AF37]", border: "border-[#D4AF37]/40" },
-  none: { particle: "#FFBF00", text: "text-[#D4AF37]", border: "border-[#D4AF37]/40" }
-};
-
-function EventCard({ event, index, globalLogo }: { event: EventDetails; index: number; globalLogo?: string }) {
-  const theme = themeMap[event.decorativeStyle || "none"] || themeMap.none;
-  const isEvening = event.time?.toLowerCase().includes("pm") || event.decorativeStyle === "sangeet" || event.title.toLowerCase().includes("night") || event.title.toLowerCase().includes("evening");
+export function Events({ events, globalLogo }: EventsProps) {
+  // Single event display as required
+  const mainEvent = events && events.length > 0 ? events[0] : {
+    title: "MATA KI CHOWKI",
+    subtitle: "AN EVENING OF DIVINE BLESSINGS",
+    date: "24 OCTOBER 2026",
+    time: "8:00 PM ONWARDS",
+    location: "KRISHNA PALACE, AGRA",
+    description: "Come together for an evening of devotion, bhajan sandhya, divine aarti and blessings of Maa Karoli."
+  };
 
   return (
-    <div className="w-full max-w-md aspect-[9/16] relative flex flex-col items-center justify-center overflow-hidden rounded-2xl shadow-2xl mx-auto bg-[#3B0918]">
-      {/* Background Image - HD & 100% visible (no dark overlays) */}
-      {event.backgroundUrl && (
-        <img 
-          src={event.backgroundUrl} 
-          alt={event.title} 
-          className="absolute inset-0 w-full h-full object-cover z-0" 
-        />
-      )}
+    <section className="py-24 px-4 sm:px-6 bg-[#FDF0F4] flex flex-col items-center relative overflow-hidden border-t border-[#F3C3D2]/50">
+      
+      {/* Background Soft Radial Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(230,81,0,0.05)_0%,_transparent_70%)] pointer-events-none" />
 
-      {isEvening && <FloatingLanterns />}
-
-      {/* Animated Blinking Sparkles */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden mix-blend-screen">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white shadow-[0_0_12px_3px_rgba(255,255,255,0.9)]"
-            style={{
-              left: Math.random() * 90 + 5 + "%",
-              top: Math.random() * 90 + 5 + "%",
-              width: Math.random() * 3 + 2 + "px",
-              height: Math.random() * 3 + 2 + "px",
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0.1, 1.5, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 1 + 1, // Rapid blink
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: Math.random() * 2
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Logo Container - Only the logo remains, completely transparent background */}
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
+      {/* Main Section Heading */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 1, delay: 0.2 }}
-        className="absolute top-6 left-0 right-0 z-10 flex flex-col items-center justify-center text-center pointer-events-none"
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="flex flex-col items-center text-center relative z-10 mb-8"
       >
-        {/* Logo - Universal and smaller */}
-        {event.showLogo !== false && globalLogo && (
-          <motion.img 
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, delay: 0.4 }}
-            src={globalLogo} 
-            alt="Logo" 
-            className="w-16 h-16 shrink-0 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]" 
-          />
-        )}
+        <span className="text-xl mb-1 text-[#E65100]">🪔</span>
+        <h2 className="font-serif text-3xl sm:text-4xl uppercase tracking-[0.15em] text-[#B8141B] font-extrabold drop-shadow-sm mb-2">
+          MATA KI CHOWKI
+        </h2>
+        <p className="font-serif text-xs sm:text-sm uppercase tracking-[0.25em] text-[#E65100] font-bold">
+          AN EVENING OF DIVINE BLESSINGS
+        </p>
+
+        <div className="flex items-center justify-center gap-3 mt-4">
+          <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+          <span className="text-sm">🌼</span>
+          <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]" />
+        </div>
       </motion.div>
 
-      {/* Caricature */}
-      {event.showCaricature !== false && event.caricatureUrl && (
-        <motion.div
-          animate={{ y: [-4, 4, -4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-4 z-20 pointer-events-none"
-        >
-          <img 
-            src={event.caricatureUrl} 
-            alt="Caricature" 
-            className="w-48 h-48 object-contain drop-shadow-2xl" 
-          />
-        </motion.div>
-      )}
-    </div>
-  );
-}
+      {/* Single Devotional Event Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 25 }}
+        whileInView={{ opacity: 1, scale: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.9 }}
+        className="w-full max-w-md mx-auto relative z-10"
+      >
+        <div className="bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.14)] relative overflow-hidden flex flex-col items-center text-center">
+          
+          {/* Inner hairline border */}
+          <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />
 
-export function Events({ events, globalLogo }: EventsProps) {
-  if (!events || events.length === 0) return null;
+          {/* Corner traditional stars */}
+          <span className="absolute top-3 left-3 text-xs text-[#D4AF37]">✦</span>
+          <span className="absolute top-3 right-3 text-xs text-[#D4AF37]">✦</span>
+          <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37]">✦</span>
+          <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37]">✦</span>
 
-  // Use events as they are (ordered by admin panel)
-  const sortedEvents = events;
+          {/* Optional Logo */}
+          {globalLogo && (
+            <img 
+              src={globalLogo} 
+              alt="Logo" 
+              className="w-16 h-16 object-contain mb-4 drop-shadow-sm" 
+            />
+          )}
 
-  // Smart Logo Cascading: If the Hero global logo is missing, look for any logo uploaded to ANY event and use it everywhere.
-  const universalLogo = globalLogo || events.find(e => e.logoUrl)?.logoUrl;
-
-  return (
-    <section className="bg-[#4A0B1E] py-24 px-4 md:px-8 flex flex-col items-center relative overflow-hidden">
-      
-      {/* Background radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(212,175,55,0.05)_0%,_transparent_70%)] pointer-events-none" />
-
-      <h2 className="font-serif text-3xl md:text-4xl uppercase tracking-widest text-[#D4AF37] text-center drop-shadow-sm font-bold mb-4 relative z-10">
-        7 Days Celebration Journey
-      </h2>
-      <div className="mb-14 relative z-10">
-        <HeartDivider />
-      </div>
-      <div className="w-full flex flex-col gap-16 md:gap-24 relative z-10">
-        {sortedEvents.map((event, index) => (
-          <div key={event.id || index}>
-            <EventCard event={event} index={index} globalLogo={universalLogo} />
+          {/* Date Badge */}
+          <div className="bg-[#FAF2F5] border border-[#B8141B]/25 rounded-2xl px-6 py-3 mb-6 shadow-sm w-full max-w-xs flex flex-col items-center">
+            <span className="font-serif text-[10px] tracking-[0.25em] text-[#E65100] uppercase font-bold mb-1">
+              DATE & DAY
+            </span>
+            <span className="font-serif text-xl sm:text-2xl font-extrabold text-[#B8141B] tracking-wider">
+              24 OCTOBER 2026
+            </span>
+            <span className="font-serif text-sm font-bold text-[#7A4B5B] uppercase tracking-widest mt-0.5">
+              SATURDAY
+            </span>
           </div>
-        ))}
-      </div>
 
-      <div className="mt-24 pt-12 border-t border-[#D4AF37]/30 flex flex-col items-center text-center w-full max-w-sm relative z-10">
-        <p className="font-serif text-[10px] tracking-[0.2em] uppercase text-[#D4AF37] font-semibold opacity-90 mb-3">
-          SPONSORED BY
-        </p>
-        <h4 className="font-serif text-lg tracking-widest text-[#FDFBF7] font-bold">
-          DARSHAN HIGHTS YUVA SANGH
-        </h4>
-        <span className="font-serif text-[#D4AF37] text-sm italic my-2">AND</span>
-        <h4 className="font-serif text-lg tracking-widest text-[#FDFBF7] font-bold mb-8">
-          SHRI HARSSHAD MAHENDRA JAAIN
-        </h4>
-        
-        <div className="w-8 h-[1px] bg-[#D4AF37]/50 mb-8" />
-        
-        <p className="font-serif text-[9px] tracking-[0.2em] uppercase text-[#D4AF37] font-semibold opacity-80 mb-2">
-          ALL EVENTS BY
-        </p>
-        <h4 className="font-serif text-base tracking-widest text-[#FDFBF7] font-bold">
-          KIRTI JAIN
-        </h4>
-        <h4 className="font-serif text-xs tracking-widest text-[#D4AF37] font-bold mt-1">
-          (EVENTS ADDICT)
-        </h4>
-      </div>
+          {/* Time Badge */}
+          <div className="flex items-center gap-2 mb-6 text-[#E65100]">
+            <Clock className="w-5 h-5 text-[#B8141B]" />
+            <span className="font-serif text-base sm:text-lg font-bold tracking-[0.12em] text-[#B8141B]">
+              8:00 PM ONWARDS
+            </span>
+          </div>
+
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
+
+          {/* Devi Dedication */}
+          <div className="flex flex-col items-center mb-6">
+            <span className="font-serif text-[10px] uppercase tracking-[0.25em] font-bold text-[#7A4B5B] mb-1">
+              IN HONOR OF
+            </span>
+            <h4 className="font-serif text-xl sm:text-2xl font-bold text-[#B8141B] tracking-widest">
+              KAROLI WALI MATA
+            </h4>
+          </div>
+
+          {/* Location Summary */}
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-[#7A4B5B] font-serif font-bold uppercase tracking-wider bg-[#FFF5F8] px-4 py-2 rounded-full border border-[#D4AF37]/30">
+            <MapPin className="w-4 h-4 text-[#B8141B]" />
+            <span>KRISHNA PALACE, AGRA</span>
+          </div>
+
+          {/* Devotional Description */}
+          <p className="font-serif text-xs sm:text-sm text-[#5E2B3C] italic mt-6 leading-relaxed px-2">
+            “Join our family for an auspicious evening of devotional bhajans, sacred aarti, and the divine grace of Karoli Wali Mata.”
+          </p>
+
+          {/* Bottom Traditional Floral Ribbon */}
+          <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-[#D4AF37]/30 w-full">
+            <span className="text-xs">🌼</span>
+            <span className="font-serif text-[11px] font-bold text-[#B8141B] tracking-[0.2em] uppercase">
+              ॥ जय माता दी ॥
+            </span>
+            <span className="text-xs">🌼</span>
+          </div>
+
+        </div>
+      </motion.div>
     </section>
   );
 }

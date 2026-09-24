@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-import { HeartDivider } from "./HeartDivider";
 import { VenueDetails, Person } from "../types";
 import { MapPin, CalendarPlus } from "lucide-react";
 
@@ -10,83 +9,113 @@ interface VenueProps {
   weddingDate?: string;
 }
 
-export function Venue({ venue, groom, bride, weddingDate }: VenueProps) {
-  // Generate Google Calendar URL
-  let calendarUrl = "";
-  if (groom && bride && weddingDate) {
-    const title = encodeURIComponent(`Wedding of ${groom.name} & ${bride.name}`);
-    const location = encodeURIComponent(`${venue.name}, ${venue.addressLine1}, ${venue.addressLine2}`);
-    
-    // Convert to ISO string and remove punctuation for Google Calendar format (YYYYMMDDTHHMMSSZ)
-    const startDate = new Date(weddingDate);
-    const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000); // add 24 hours
-    const startStr = startDate.toISOString().replace(/-|:|\.\d\d\d/g,"");
-    const endStr = endDate.toISOString().replace(/-|:|\.\d\d\d/g,"");
-    
-    calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&location=${location}&details=We+can't+wait+to+celebrate+with+you!`;
-  }
+export function Venue({ venue }: VenueProps) {
+  // Generate Google Calendar URL for Mata Ki Chowki on 24 October 2026, 8:00 PM IST
+  const eventTitle = encodeURIComponent("Mata Ki Chowki");
+  const eventLocation = encodeURIComponent("Krishna Palace, Sikandra Bodla Road, Agra, Near Kargil Petrol Pump");
+  const eventDetails = encodeURIComponent("Mata Ki Chowki celebration with the divine blessings of Karoli Wali Mata. The Goyal Family cordially invites you.");
+  
+  // 24 Oct 2026, 8:00 PM IST is 2026-10-24T14:30:00Z; ends at 2026-10-24T19:30:00Z
+  const calendarDates = "20261024T143000Z/20261024T193000Z";
+  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${calendarDates}&location=${eventLocation}&details=${eventDetails}`;
+
+  const mapUrl = venue?.mapUrl || "https://www.google.com/maps/search/?api=1&query=Krishna+Palace+Sikandra+Bodla+Road+Agra";
 
   return (
-    <section className="py-16 px-6 bg-blush-light flex flex-col items-center overflow-hidden">
+    <section className="py-24 px-4 sm:px-6 bg-[#FDF0F4] flex flex-col items-center overflow-hidden border-t border-[#F3C3D2]/50">
+      
+      {/* Background Soft Glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(230,81,0,0.04)_0%,_transparent_70%)] pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md flex flex-col items-center text-center relative"
+        className="w-full max-w-md flex flex-col items-center text-center relative z-10"
       >
-        <MapPin className="w-6 h-6 text-wine-dark mb-4 opacity-80" strokeWidth={1.5} />
-        <h2 className="font-serif text-4xl md:text-5xl uppercase tracking-widest text-wine-dark font-bold text-center drop-shadow-sm">
-          Venue
+        <span className="text-xl mb-1 text-[#E65100]">🪔</span>
+
+        <h2 className="font-serif text-3xl sm:text-4xl uppercase tracking-[0.16em] text-[#B8141B] font-extrabold drop-shadow-sm mb-2">
+          VENUE
         </h2>
         
-        <HeartDivider />
-
-        <div className="mt-4 flex flex-col items-center relative z-10">
-          <h3 className="font-serif font-bold text-2xl text-wine-dark mb-3">{venue.name}</h3>
-          <p className="text-wine-dark/80 text-sm md:text-base font-semibold max-w-[250px] leading-relaxed">
-            {venue.addressLine1}
-            <br />
-            {venue.addressLine2}
-          </p>
+        {/* Divider with Marigold */}
+        <div className="flex items-center justify-center gap-3 my-3">
+          <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+          <span className="text-sm">🌼</span>
+          <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]" />
         </div>
 
-        {/* Minimal palace line art placeholder */}
-        <div className="w-full max-w-[280px] h-32 mt-10 mb-8 opacity-20 flex items-end justify-center pointer-events-none">
-          <svg viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full stroke-wine-dark" strokeWidth="1">
-            <path d="M100 10C115 10 125 25 125 45V90H75V45C75 25 85 10 100 10Z" />
-            <path d="M40 50C48 50 55 58 55 70V90H25V70C25 58 32 50 40 50Z" />
-            <path d="M160 50C168 50 175 58 175 70V90H145V70C145 58 152 50 160 50Z" />
-            <line x1="0" y1="90" x2="200" y2="90" />
-            <path d="M90 90V65C90 60 94 55 100 55C106 55 110 60 110 65V90" />
-            <line x1="25" y1="35" x2="25" y2="50" />
-            <line x1="175" y1="35" x2="175" y2="50" />
-            <circle cx="25" cy="32" r="3" />
-            <circle cx="175" cy="32" r="3" />
-            <circle cx="100" cy="5" r="5" />
-          </svg>
-        </div>
-
-        <div className="flex flex-col gap-4 w-full px-4">
-          <a 
-            href={venue.mapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 bg-burgundy text-white px-8 py-3 rounded-md font-serif text-sm tracking-widest shadow-md hover:bg-wine-dark transition-colors active:scale-95"
-          >
-            <MapPin className="w-4 h-4" /> View on Google Maps
-          </a>
+        {/* Venue Card */}
+        <div className="w-full bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.12)] mt-4 relative flex flex-col items-center">
           
-          {calendarUrl && (
+          {/* Inner hairline border */}
+          <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />
+
+          {/* Location Pin Icon in Gold Circle */}
+          <div className="w-12 h-12 rounded-full bg-[#FAF2F5] border border-[#D4AF37]/50 flex items-center justify-center mb-4 shadow-sm">
+            <MapPin className="w-6 h-6 text-[#B8141B]" />
+          </div>
+
+          <h3 className="font-serif font-extrabold text-2xl sm:text-3xl text-[#B8141B] tracking-wider mb-3">
+            {venue?.name || "KRISHNA PALACE"}
+          </h3>
+
+          <div className="flex flex-col gap-1 text-[#3C1B26] text-sm sm:text-base font-serif font-semibold leading-relaxed max-w-xs">
+            <p>{venue?.addressLine1 || "Sikandra Bodla Road, Agra"}</p>
+            <p className="text-[#E65100] font-bold">{venue?.addressLine2 || "Near Kargil Petrol Pump"}</p>
+          </div>
+
+          {/* Traditional Temple Decorative Line Art */}
+          <div className="w-full max-w-[220px] h-24 my-6 opacity-40 flex items-center justify-center pointer-events-none">
+            <svg viewBox="0 0 200 90" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full stroke-[#B8141B]" strokeWidth="1.2">
+              {/* Kalash on spire */}
+              <circle cx="100" cy="10" r="3" fill="#D4AF37" />
+              <path d="M100 13V20" />
+              {/* Temple Dome / Mandapa */}
+              <path d="M100 20C112 20 120 32 120 48H80C80 32 88 20 100 20Z" />
+              {/* Pillars */}
+              <line x1="84" y1="48" x2="84" y2="78" />
+              <line x1="94" y1="48" x2="94" y2="78" />
+              <line x1="106" y1="48" x2="106" y2="78" />
+              <line x1="116" y1="48" x2="116" y2="78" />
+              {/* Side Pillars */}
+              <path d="M60 40C68 40 72 48 72 58H48C48 48 52 40 60 40Z" />
+              <line x1="52" y1="58" x2="52" y2="78" />
+              <line x1="68" y1="58" x2="68" y2="78" />
+              <path d="M140 40C148 40 152 48 152 58H128C128 48 132 40 140 40Z" />
+              <line x1="132" y1="58" x2="132" y2="78" />
+              <line x1="148" y1="58" x2="148" y2="78" />
+              {/* Temple Base Platform */}
+              <line x1="30" y1="78" x2="170" y2="78" strokeWidth="2" />
+              <line x1="20" y1="84" x2="180" y2="84" strokeWidth="1.5" />
+            </svg>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3.5 w-full relative z-10">
+            <a 
+              href={mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 bg-[#B8141B] hover:bg-[#9E0E15] text-[#FFFDF7] px-6 py-3.5 rounded-xl font-serif text-xs sm:text-sm tracking-[0.16em] uppercase font-bold shadow-md transition-all active:scale-95"
+            >
+              <MapPin className="w-4 h-4 text-[#FFBF00]" /> 
+              VIEW ON GOOGLE MAPS
+            </a>
+            
             <a 
               href={calendarUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-white text-wine-dark border border-pink-border px-8 py-3 rounded-md font-serif text-sm tracking-widest shadow-sm hover:bg-[#3B0918] transition-colors active:scale-95"
+              className="flex items-center justify-center gap-2.5 bg-[#FFFDF7] hover:bg-[#FAF2F5] text-[#B8141B] border-2 border-[#D4AF37]/60 px-6 py-3 rounded-xl font-serif text-xs sm:text-sm tracking-[0.16em] uppercase font-bold shadow-sm transition-all active:scale-95"
             >
-              <CalendarPlus className="w-4 h-4" /> Save to Calendar
+              <CalendarPlus className="w-4 h-4 text-[#E65100]" /> 
+              SAVE TO CALENDAR
             </a>
-          )}
+          </div>
+
         </div>
       </motion.div>
     </section>

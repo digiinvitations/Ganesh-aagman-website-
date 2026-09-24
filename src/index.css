@@ -1,21 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-blush-main: #3B0918;
-  --color-blush-light: #4A0B1E;
-  --color-wine-dark: #D4AF37;
-  --color-burgundy: #8B0000;
-  --color-pink-accent: #FFBF00;
-  --color-pink-border: #C5A059;
-  --color-text-body: #FDFBF7;
-  --color-cream: #2A040F;
+  --color-blush-main: #FDF0F4;
+  --color-blush-light: #FFF5F8;
+  --color-blush-warm: #FCE6ED;
+  --color-blush-panel: #FAF2F5;
+  --color-wine-dark: #B8141B;
+  --color-burgundy: #9E0E15;
+  --color-saffron: #E65100;
+  --color-gold: #D4AF37;
+  --color-golden-yellow: #E5A912;
+  --color-leaf-green: #2E7D32;
+  --color-deep-teal: #0D5C58;
+  --color-cream: #FFFDF7;
+  --color-pink-accent: #E65100;
+  --color-pink-border: #F3C3D2;
+  --color-text-body: #3C1B26;
+  --color-text-muted: #7A4B5B;
 
   --font-script: "Cormorant Garamond", serif;
-  --font-serif: "Cormorant Garamond", serif;
+  --font-serif: "Cormorant Garamond", "Noto Serif Devanagari", serif;
+  --font-devanagari: "Noto Serif Devanagari", "Rozha One", serif;
+  --font-display: "Cinzel", "Cormorant Garamond", serif;
 }
 
 body {
-  @apply bg-blush-main text-text-body font-serif antialiased overflow-x-hidden;
+  @apply bg-[#FDF0F4] text-[#3C1B26] font-serif antialiased overflow-x-hidden;
 }
 
 /* Hide scrollbar for a cleaner look but allow scrolling */
@@ -26,58 +36,54 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-pink-border rounded-full;
+  background: #E8B4C4;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-pink-accent;
+  background: #D4AF37;
 }
 
-/* Environment Animations */
+/* Environment Animations for marigold petals & sacred sparkles */
 @keyframes petal-fall {
   0% { top: -10%; opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
+  10% { opacity: 0.9; }
+  90% { opacity: 0.9; }
   100% { top: 110%; opacity: 0; }
 }
 
 @keyframes petal-sway {
   0%, 100% { transform: translateX(0px) rotate(0deg); }
-  50% { transform: translateX(50px) rotate(45deg); }
+  50% { transform: translateX(45px) rotate(35deg); }
 }
 
-@keyframes fly-across-right {
-  0% { left: -10%; }
-  100% { left: 110%; }
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(8deg); }
+  75% { transform: rotate(-8deg); }
 }
 
-@keyframes fly-across-left {
-  0% { left: 110%; }
-  100% { left: -10%; }
+@keyframes flame-glow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 179, 0, 0.8)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 18px rgba(255, 120, 0, 0.95)); }
 }
 
-@keyframes fly-bob {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-40px); }
+.animate-flame-glow {
+  animation: flame-glow 2s ease-in-out infinite;
 }
 
-@keyframes flap-right {
-  0%, 100% { transform: scaleX(1) rotate(15deg) translateY(0); animation-timing-function: ease-out; }
-  50% { transform: scaleX(0.1) rotate(0deg) translateY(-4px); animation-timing-function: ease-in; }
-}
-
-@keyframes flap-left {
-  0%, 100% { transform: scaleX(-1) rotate(-15deg) translateY(0); animation-timing-function: ease-out; }
-  50% { transform: scaleX(-0.1) rotate(0deg) translateY(-4px); animation-timing-function: ease-in; }
+.animate-bell-ring {
+  animation: bell-ring 3s ease-in-out infinite;
+  transform-origin: top center;
 }
 
 @keyframes lantern-rise {
   0% { top: 110%; opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.8; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
   100% { top: -10%; opacity: 0; }
 }
 
 @keyframes lantern-sway {
-  0%, 100% { transform: translateX(-15px) rotate(-5deg); }
-  50% { transform: translateX(15px) rotate(5deg); }
+  0%, 100% { transform: translateX(-10px) rotate(-3deg); }
+  50% { transform: translateX(10px) rotate(3deg); }
 }

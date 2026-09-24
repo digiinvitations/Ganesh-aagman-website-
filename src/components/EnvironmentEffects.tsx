@@ -1,17 +1,23 @@
 import React from 'react';
 
-const FALLING_ITEMS = ['🪷', '🪷', '🪷', '🌰', '🌰', '🌰'];
+// Sacred Marigold petals, auspicious blossoms, and golden divine sparkles
+const FALLING_ITEMS = ['🌼', '🌸', '✨', '🌺', '🌼', '🪷'];
 
-const FallingElement = ({ item, index }: { item: string, index: number }) => {
-  const durationFall = Math.random() * 20 + 25; 
+interface FallingElementProps {
+  item: string;
+  index: number;
+}
+
+const FallingElement: React.FC<FallingElementProps> = ({ item, index }) => {
+  const durationFall = Math.random() * 20 + 22; 
   const durationSway = Math.random() * 4 + 4; // 4s - 8s
-  const delay = Math.random() * 15;
+  const delay = Math.random() * 12;
   const startLeft = Math.random() * 90 + 5; // 5% - 95%
-  const size = Math.random() * 10 + 24; // 24px - 34px
+  const size = Math.random() * 8 + 20; // 20px - 28px
 
   return (
     <div 
-      className="fixed z-[9000] pointer-events-none select-none opacity-80 drop-shadow-md"
+      className="fixed z-[9000] pointer-events-none select-none opacity-75 drop-shadow-sm"
       style={{
         left: `${startLeft}%`,
         animation: `petal-fall ${durationFall}s linear infinite`,

@@ -3,48 +3,47 @@ import { db } from "../firebase";
 import { WeddingData } from "../types";
 import { weddingData as defaultData } from "../data";
 
-const DATA_DOC_ID = "main";
+const DATA_DOC_ID = "matakichowki_main";
 
-const DEFAULT_TEMPLATE_ID = "ganpati_main";
+const DEFAULT_TEMPLATE_ID = "matakichowki_main";
 
 export async function getWeddingData(templateId: string = DEFAULT_TEMPLATE_ID): Promise<WeddingData> {
   try {
-    const docRef = doc(db, "weddingConfig", templateId);
+    const safeTemplateId = (templateId || DEFAULT_TEMPLATE_ID).replace(/\//g, "-");
+    const docRef = doc(db, "weddingConfig", safeTemplateId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
       const data = docSnap.data() as WeddingData;
-      // Schema migration: If the first event doesn't have a hashtag (meaning it's the old structure),
-      // we inject the newly requested default events data so it appears on the website.
-      if (data.events && data.events.length > 0 && data.events[0].hashtag === undefined) {
-        data.events = defaultData.events;
+      
+      // Clean migration: If document has old Ganpati data, override with new Mata Ki Chowki default
+      const hasOldGanpatiData = 
+        data.heroMessage?.toUpperCase().includes("GANPATI") || 
+        data.heroMessage?.toUpperCase().includes("BAPPA") ||
+        data.heroMessage?.toUpperCase().includes("DARSHAN HEIGHTS") ||
+        data.events?.some(e => e.title?.toUpperCase().includes("AAGMAN") || e.title?.toUpperCase().includes("GANPATI"));
+
+      if (hasOldGanpatiData) {
+        await setDoc(docRef, defaultData);
+        return defaultData;
       }
 
-      // Schema migration for Timeline to the new Ganpati setup
-      if (data.timeline && data.timeline.length > 0 && data.timeline[0].hashtag === undefined) {
-        data.timeline = defaultData.timeline;
-      }
-
-      return data;
+      return {
+        ...defaultData,
+        ...data,
+        venue: { ...defaultData.venue, ...(data.venue || {}) },
+        familyMembers: { ...defaultData.familyMembers, ...(data.familyMembers || {}) },
+        contactPerson: { ...defaultData.contactPerson, ...(data.contactPerson || {}) },
+        events: (data.events && data.events.length > 0) ? data.events : defaultData.events,
+        timeline: (data.timeline && data.timeline.length > 0) ? data.timeline : defaultData.timeline
+      };
     } else {
-      // Initialize with default data if none exists
-      if (templateId === DEFAULT_TEMPLATE_ID) {
-        // Attempt to copy from 'main' to prevent data loss since this project was remixed
-        const mainRef = doc(db, "weddingConfig", "main");
-        const mainSnap = await getDoc(mainRef);
-        if (mainSnap.exists()) {
-          const mainData = mainSnap.data();
-          await setDoc(docRef, mainData);
-          return mainData as WeddingData;
-        } else {
-          await setDoc(docRef, defaultData);
-          return defaultData;
-        }
-      }
+      // Initialize with default Mata Ki Chowki data
+      await setDoc(docRef, defaultData);
       return defaultData;
     }
   } catch (error) {
-    console.error("Error fetching wedding data:", error);
+    console.error("Error fetching event data:", error);
     return defaultData; // Fallback
   }
 }

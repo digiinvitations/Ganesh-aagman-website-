@@ -85,13 +85,13 @@ export function MusicControl({ musicUrl, shouldPlay = false }: MusicControlProps
   return (
     <button
       onClick={togglePlay}
-      className="fixed top-6 right-6 z-50 p-3 rounded-full bg-blush-light/80 backdrop-blur-sm shadow-sm border border-pink-border transition-transform active:scale-95"
+      className="fixed top-6 right-6 z-50 p-3 rounded-full bg-[#FFFDF7]/90 backdrop-blur-md shadow-md border border-[#D4AF37]/50 transition-all hover:scale-105 active:scale-95 cursor-pointer"
       aria-label={isPlaying ? "Mute music" : "Play music"}
     >
       {isPlaying ? (
-        <Volume2 className="w-5 h-5 text-wine-dark" />
+        <Volume2 className="w-5 h-5 text-[#B8141B]" />
       ) : (
-        <VolumeX className="w-5 h-5 text-wine-dark opacity-60" />
+        <VolumeX className="w-5 h-5 text-[#7A4B5B] opacity-70" />
       )}
     </button>
   );

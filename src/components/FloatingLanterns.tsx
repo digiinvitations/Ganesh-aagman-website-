@@ -10,12 +10,12 @@ export function FloatingLanterns() {
         const durationRise = Math.random() * 20 + 25; // 25s - 45s
         const durationSway = Math.random() * 4 + 4; // 4s - 8s
         const delay = Math.random() * 20;
-        const size = Math.random() * 10 + 20; // 20px - 30px
+        const size = Math.random() * 8 + 18; // 18px - 26px
 
         return (
           <div
-            key={`lantern-${i}`}
-            className="absolute drop-shadow-md opacity-70"
+            key={`floating-diya-${i}`}
+            className="absolute drop-shadow-md opacity-60"
             style={{
               left: `${left}%`,
               top: '110%',
@@ -29,7 +29,7 @@ export function FloatingLanterns() {
                 fontSize: `${size}px`,
               }}
             >
-              🏮
+              🪔
             </div>
           </div>
         );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { WeddingData } from '../types';
 
@@ -20,32 +20,9 @@ export function Preloader({ data, onComplete }: PreloaderProps) {
       if (data.openingThumbnailUrl) assets.push({ type: 'image', url: data.openingThumbnailUrl });
       if (data.openingVideoUrl) assets.push({ type: 'media', url: data.openingVideoUrl });
       if (data.heroVideoUrl) assets.push({ type: 'media', url: data.heroVideoUrl });
-      
+      if (data.heroImageUrl) assets.push({ type: 'image', url: data.heroImageUrl });
+      if (data.deviImageUrl) assets.push({ type: 'image', url: data.deviImageUrl });
       if (data.globalLogo) assets.push({ type: 'image', url: data.globalLogo });
-      
-      if (data.events) {
-        // Collect everything from events array
-        data.events.forEach(e => {
-           if (e.videoUrl) assets.push({ type: 'media', url: e.videoUrl });
-           if (e.image) assets.push({ type: 'image', url: e.image });
-           if (e.backgroundUrl) assets.push({ type: 'image', url: e.backgroundUrl });
-           if (e.caricatureUrl) assets.push({ type: 'image', url: e.caricatureUrl });
-           if (e.circularImageUrl) assets.push({ type: 'image', url: e.circularImageUrl });
-           if (e.logoUrl) assets.push({ type: 'image', url: e.logoUrl });
-        });
-        
-        if (data.gallery) {
-           data.gallery.forEach(url => assets.push({ type: 'image', url }));
-        }
-      }
-
-      // Collect timeline assets specifically
-      if (data.timeline) {
-        data.timeline.forEach(t => {
-           if (t.imageUrl) assets.push({ type: 'image', url: t.imageUrl });
-           if (t.logoUrl) assets.push({ type: 'image', url: t.logoUrl });
-        });
-      }
 
       // Deduplicate by URL
       const uniqueAssets = Array.from(new Set(assets.map(a => a.url)))
@@ -73,28 +50,25 @@ export function Preloader({ data, onComplete }: PreloaderProps) {
             img.onerror = () => { updateProgress(); resolve(); };
             img.src = asset.url;
           } else {
-            // Fetch media to ensure it is fully downloaded and cached
             fetch(asset.url, { cache: "force-cache" })
               .then(res => res.blob())
               .then(() => { updateProgress(); resolve(); })
-              .catch((err) => { 
-                 console.warn("Preload fetch failed (likely CORS), skipping:", asset.url);
-                 updateProgress(); 
-                 resolve(); 
-               });
+              .catch(() => { 
+                updateProgress(); 
+                resolve(); 
+              });
           }
         });
       });
 
-      // Timeout after 12 seconds max to avoid freezing on slow connections
-      const timeout = new Promise<void>(resolve => setTimeout(resolve, 15000)); // slightly increased timeout for large video loading
+      const timeout = new Promise<void>(resolve => setTimeout(resolve, 10000));
       await Promise.race([Promise.all(promises), timeout]);
 
       if (isMounted) {
         setProgress(100);
         setTimeout(() => {
           if (isMounted) onComplete();
-        }, 800); // Brief pause at 100% so it looks complete
+        }, 600);
       }
     };
 
@@ -104,37 +78,33 @@ export function Preloader({ data, onComplete }: PreloaderProps) {
   }, [data, onComplete]);
 
   return (
-    <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-[#3B0918] px-6">
+    <div className="fixed inset-0 z-[100000] flex flex-col items-center justify-center bg-[#FDF0F4] px-6">
       <motion.div 
-        animate={{ scale: [1, 1.1, 1] }}
+        animate={{ scale: [1, 1.08, 1] }}
         transition={{ 
-          scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
+          scale: { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
         }}
-        className="mb-8 flex items-center justify-center text-[#D4AF37]"
+        className="mb-6 flex flex-col items-center justify-center text-center"
       >
-        <span className="text-6xl drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">🕉️</span>
+        <span className="text-5xl filter drop-shadow-[0_0_15px_rgba(255,183,77,0.6)] mb-3">
+          🪔
+        </span>
+        <h2 className="font-serif text-xl sm:text-2xl font-extrabold text-[#B8141B] tracking-[0.18em]">
+          ॥ जय माता दी ॥
+        </h2>
       </motion.div>
 
       <div className="w-full max-w-xs">
-        <div className="h-1 w-full bg-[#D4AF37]/20 rounded-full overflow-visible relative">
+        <div className="h-1.5 w-full bg-[#D4AF37]/25 rounded-full overflow-hidden relative">
           <motion.div 
-            className="h-full bg-[#D4AF37] absolute top-0 left-0 rounded-full shadow-[0_0_8px_rgba(212,175,55,0.8)]"
+            className="h-full bg-gradient-to-r from-[#B8141B] to-[#D4AF37] absolute top-0 left-0 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.3 }}
           />
-          {/* Progress Arrow following the tip */}
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 text-[14px] drop-shadow-sm z-10"
-            initial={{ left: "0%" }}
-            animate={{ left: `calc(${progress}% - 8px)` }}
-            transition={{ duration: 0.3 }}
-          >
-            🪷
-          </motion.div>
         </div>
-        <p className="text-center text-[#D4AF37] font-serif text-[10px] uppercase tracking-[0.2em] mt-6 font-bold opacity-90 drop-shadow-sm">
-          {progress < 100 ? `Preparing Divine Journey ${progress}%` : "Ready"}
+        <p className="text-center text-[#7A4B5B] font-serif text-[11px] uppercase tracking-[0.2em] mt-4 font-bold">
+          {progress < 100 ? `Opening Divine Invitation ${progress}%` : "Welcome"}
         </p>
       </div>
     </div>

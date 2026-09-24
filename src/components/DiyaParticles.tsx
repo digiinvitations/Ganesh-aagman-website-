@@ -21,7 +21,7 @@ export function DiyaParticles() {
 
   return (
     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden mix-blend-screen">
-      {/* Subtle flickering warm gradient behind Ganesha */}
+      {/* Subtle flickering warm gradient behind Mata Rani */}
       <motion.div
         animate={{ opacity: [0.3, 0.5, 0.3, 0.6, 0.3] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}

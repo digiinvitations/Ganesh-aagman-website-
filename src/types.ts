@@ -57,11 +57,29 @@ export interface VenueDetails {
   addressLine1: string;
   addressLine2: string;
   mapUrl: string;
+  landmarks?: string;
 }
 
 export interface WeddingData {
-  groom: Person;
-  bride: Person;
+  // Legacy groom/bride fields kept for type compatibility
+  groom?: Person;
+  bride?: Person;
+  
+  // Mata Ki Chowki specific event fields
+  eventName?: string;
+  deviName?: string;
+  deviImageUrl?: string;
+  familyMembers?: {
+    elder1?: string;
+    elder2?: string;
+    elder3?: string;
+    familyName?: string;
+  };
+  contactPerson?: {
+    name: string;
+    phone: string;
+  };
+
   weddingDate: string; // ISO format for countdown
   weddingDateFormatted: string;
   weddingTimeFormatted: string;
@@ -69,6 +87,7 @@ export interface WeddingData {
   openingThumbnailUrl?: string;
   openingVideoUrl?: string;
   heroVideoUrl?: string;
+  heroImageUrl?: string;
   ogImageUrl?: string;
   globalLogo?: string;
   heroMessage: string;
@@ -76,8 +95,8 @@ export interface WeddingData {
   events: EventDetails[];
   timeline: TimelineItem[];
   venue: VenueDetails;
-  transportation: string;
-  dressCode: string;
+  transportation?: string;
+  dressCode?: string;
   gallery: string[];
   musicUrl: string;
   closingMessage: string;
