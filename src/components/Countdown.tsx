@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import confetti from "canvas-confetti";
+import { Sparkles, RotateCcw } from "lucide-react";
 
 interface CountdownProps {
   targetDate?: string;
@@ -8,6 +9,8 @@ interface CountdownProps {
   dayFormatted?: string;
   timeFormatted?: string;
   venueName?: string;
+  onScratched?: () => void;
+  isInitiallyScratched?: boolean;
 }
 
 // Auspicious celebration chime using Web Audio API synthesis
@@ -46,13 +49,15 @@ export function Countdown({
   dateFormatted = "24 October 2026",
   dayFormatted = "Saturday",
   timeFormatted = "8:00 PM Onwards",
-  venueName = "Krishna Palace, Agra"
+  venueName = "Krishna Palace, Agra",
+  onScratched,
+  isInitiallyScratched = false,
 }: CountdownProps) {
   // Scratch progression:
   // 1: Layer 1 (Gold Foil with "SCRATCH GOLD FOIL")
   // 2: Layer 2 (Gold Foil with "SCRATCH GOLD FOIL")
-  // 3: Both layers cleared -> Date Revealed & Countdown Activated!
-  const [scratchLayer, setScratchLayer] = useState<1 | 2 | 3>(1);
+  // 3: Both layers cleared -> Date Revealed & Countdown Activated & Rest of Website Revealed!
+  const [scratchLayer, setScratchLayer] = useState<1 | 2 | 3>(isInitiallyScratched ? 3 : 1);
   const [resetKey, setResetKey] = useState(0);
 
   // Canvas refs
@@ -96,23 +101,23 @@ export function Countdown({
 
     // Multi-cannon celebratory confetti
     try {
-      const end = Date.now() + 1500;
+      const end = Date.now() + 1600;
       const colors = ["#D4AF37", "#FFBF00", "#B8141B", "#FFE58F", "#FF7A00"];
 
       (function frame() {
         confetti({
-          particleCount: 5,
+          particleCount: 6,
           angle: 60,
-          spread: 55,
+          spread: 60,
           origin: { x: 0, y: 0.65 },
-          colors
+          colors,
         });
         confetti({
-          particleCount: 5,
+          particleCount: 6,
           angle: 120,
-          spread: 55,
+          spread: 60,
           origin: { x: 1, y: 0.65 },
-          colors
+          colors,
         });
 
         if (Date.now() < end) {
@@ -124,7 +129,7 @@ export function Countdown({
     }
   }, []);
 
-  // Draw foil on canvas: ONLY luxurious metallic foil with "SCRATCH GOLD FOIL"
+  // Draw foil on canvas: Luxurious metallic foil with "SCRATCH GOLD FOIL"
   const drawFoil = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, layer: 1 | 2) => {
     ctx.clearRect(0, 0, width, height);
 
@@ -250,26 +255,27 @@ export function Countdown({
 
     const percentage = (transparentPixels / sampledPixels) * 100;
 
-    // Threshold 30%
-    if (percentage > 30) {
+    // Threshold 28% for pleasant, responsive reveal
+    if (percentage > 28) {
       if (scratchLayer === 1) {
         // Layer 1 cleared -> Advance to Layer 2
         try {
           confetti({
-            particleCount: 20,
+            particleCount: 22,
             spread: 45,
             origin: { y: 0.55 },
-            colors: ["#D4AF37", "#FFE58F", "#FF7A00"]
+            colors: ["#D4AF37", "#FFE58F", "#FF7A00"],
           });
         } catch {}
         setScratchLayer(2);
       } else if (scratchLayer === 2) {
-        // Layer 2 cleared -> Final Reveal & Automatically Activate Countdown!
+        // Layer 2 cleared -> Final Reveal & Automatically Activate Countdown & Reveal other sections!
         setScratchLayer(3);
         triggerCelebration();
+        onScratched?.();
       }
     }
-  }, [scratchLayer, triggerCelebration]);
+  }, [scratchLayer, triggerCelebration, onScratched]);
 
   const scratch = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current;
@@ -285,7 +291,7 @@ export function Countdown({
 
     ctx.save();
     ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 36 * dpr;
+    ctx.lineWidth = 38 * dpr;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
@@ -296,7 +302,7 @@ export function Countdown({
       ctx.stroke();
     } else {
       ctx.beginPath();
-      ctx.arc(x * dpr, y * dpr, 18 * dpr, 0, Math.PI * 2);
+      ctx.arc(x * dpr, y * dpr, 19 * dpr, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
@@ -304,7 +310,7 @@ export function Countdown({
     lastPosRef.current = { x, y };
 
     const now = Date.now();
-    if (now - lastCheckTimeRef.current > 120) {
+    if (now - lastCheckTimeRef.current > 110) {
       lastCheckTimeRef.current = now;
       checkScratchPercentage();
     }
@@ -333,15 +339,73 @@ export function Countdown({
     checkScratchPercentage();
   };
 
+  // Quick auto-reveal feature
+  const handleQuickReveal = () => {
+    setScratchLayer(3);
+    triggerCelebration();
+    onScratched?.();
+  };
+
+  // Re-scratch reset feature
+  const handleReset = () => {
+    setScratchLayer(1);
+    setResetKey((prev) => prev + 1);
+  };
+
   return (
-    <section className="py-10 sm:py-14 px-4 bg-[#FDF0F4] flex flex-col items-center relative overflow-hidden border-t border-[#F3C3D2]/60">
+    <section 
+      id="scratch-card-section"
+      className="py-10 sm:py-16 px-4 bg-[#FDF0F4] flex flex-col items-center justify-center relative overflow-hidden select-none min-h-[92svh]"
+    >
+      {/* Soft Devotional Aura Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,183,77,0.18)_0%,_rgba(253,240,244,0)_75%)] pointer-events-none" />
+
       <div className="w-full max-w-md flex flex-col items-center relative z-10">
+
+        {/* Auspicious Devotional Invocation Header */}
+        <div className="flex flex-col items-center text-center mb-4">
+          <div className="flex items-center gap-2 mb-1 text-sm text-[#B8141B] font-bold font-serif">
+            <span>🔔</span>
+            <span className="tracking-[0.25em] uppercase text-xs sm:text-sm text-[#B8141B] drop-shadow-xs">
+              ॥ श्री गणेशाय नमः ॥ • ॥ जय माता दी ॥
+            </span>
+            <span>🔔</span>
+          </div>
+
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.18em] text-[#B8141B] drop-shadow-sm">
+            Mata Ki Chowki
+          </h1>
+          <p className="font-serif text-xs uppercase tracking-[0.22em] text-[#E65100] font-semibold mt-0.5">
+            ॥ शुभ निमंत्रण पत्र ॥
+          </p>
+        </div>
+
+        {/* Scratch Guidance / Celebration Status Banner */}
+        <div className="mb-3 w-full flex justify-center">
+          {scratchLayer !== 3 ? (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFFDF7] border border-[#D4AF37] shadow-[0_2px_12px_rgba(212,175,55,0.25)] animate-pulse">
+              <span className="text-xs text-[#E65100]">🪔</span>
+              <span className="font-serif text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-[#B8141B]">
+                {scratchLayer === 1 ? "Scratch Gold Foil to Reveal" : "Keep Scratching to Unlock!"}
+              </span>
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFFDF7] border border-[#D4AF37] shadow-[0_2px_12px_rgba(212,175,55,0.3)]">
+              <span className="text-xs text-[#E65100]">🪔</span>
+              <span className="font-serif text-[11px] sm:text-xs font-bold uppercase tracking-[0.18em] text-[#B8141B]">
+                तारीख व काउंटडाउन प्रकट • Invitation Revealed
+              </span>
+              <span className="text-xs text-[#E65100]">✦</span>
+            </div>
+          )}
+        </div>
         
-        {/* GOLDEN PREMIUM CIRCULAR RECTANGULAR BOX */}
-        <div className="w-full bg-[#FFFDF7] rounded-[32px] sm:rounded-[36px] p-5 sm:p-7 border-2 border-[#D4AF37] shadow-[0_12px_35px_rgba(212,175,55,0.22)] relative flex flex-col items-center overflow-hidden">
+        {/* GOLDEN ROYAL SCRATCH CARD CONTAINER */}
+        <div className="w-full bg-[#FFFDF7] rounded-[32px] sm:rounded-[36px] p-5 sm:p-7 border-2 border-[#D4AF37] shadow-[0_12px_40px_rgba(212,175,55,0.28)] relative flex flex-col items-center overflow-hidden">
           
           {/* Inner ornamental hairline border */}
-          <div className="absolute inset-2.5 rounded-[26px] border border-[#D4AF37]/30 pointer-events-none" />
+          <div className="absolute inset-2.5 rounded-[26px] border border-[#D4AF37]/35 pointer-events-none" />
 
           {/* Corner gold stars */}
           <span className="absolute top-3.5 left-3.5 text-xs text-[#D4AF37] pointer-events-none">✦</span>
@@ -351,14 +415,17 @@ export function Countdown({
 
           {/* 
             SCRATCH BOX 
-            Reveals the required date when scratched
+            Reveals the date & activates the countdown when scratched
           */}
           <div 
             ref={containerRef}
-            className="relative w-full h-[180px] sm:h-[190px] rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-inner select-none bg-[#FFFDF7]"
+            className="relative w-full h-[185px] sm:h-[195px] rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-inner select-none bg-[#FFFDF7]"
           >
-            {/* Underlying Content: Required Date */}
+            {/* Underlying Content: Event Date, Day & Time */}
             <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-center p-4 bg-[#FFFDF7] text-center select-none">
+              <span className="text-xs text-[#E65100] font-serif font-bold uppercase tracking-[0.2em] mb-1">
+                ॥ शुभ मुहूर्त ॥
+              </span>
               <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#B8141B] tracking-wider leading-tight drop-shadow-sm mb-1.5">
                 {dateFormatted}
               </h3>
@@ -395,6 +462,22 @@ export function Countdown({
             </AnimatePresence>
           </div>
 
+          {/* Quick Reveal button for convenience when unscratched */}
+          {scratchLayer !== 3 && (
+            <div className="mt-3.5 flex flex-col items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleQuickReveal}
+                className="text-[11px] font-serif font-bold text-[#B8141B] hover:text-[#800C12] underline underline-offset-4 tracking-wider transition-colors cursor-pointer"
+              >
+                ✦ Click to Auto-Reveal / तुरंत खोलें ✦
+              </button>
+              <p className="text-[10px] text-[#7A4B5B] font-serif tracking-wide text-center">
+                (Swipe or drag finger across gold foil to scratch manually)
+              </p>
+            </div>
+          )}
+
           {/* 
             THE COUNTDOWN
             Automatically starts and becomes visible upon scratching the date card
@@ -405,12 +488,33 @@ export function Countdown({
                 initial={{ opacity: 0, scale: 0.92, y: 12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                className="w-full mt-5 flex justify-between items-center gap-2 px-0 sm:px-1"
+                className="w-full mt-5 flex flex-col items-center"
               >
-                <TimeUnit value={timeLeft.days} label="DAYS" />
-                <TimeUnit value={timeLeft.hours} label="HOURS" />
-                <TimeUnit value={timeLeft.minutes} label="MINUTES" />
-                <TimeUnit value={timeLeft.seconds} label="SECONDS" />
+                {/* Countdown Header */}
+                <div className="w-full flex items-center justify-between mb-3 px-1">
+                  <span className="font-serif text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#B8141B]">
+                    COUNTDOWN TO AUSPICIOUS CHOWKI
+                  </span>
+                  
+                  {/* Option to re-scratch if desired */}
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    title="Scratch again"
+                    className="inline-flex items-center gap-1 text-[10px] font-serif text-[#7A4B5B] hover:text-[#B8141B] transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Re-scratch</span>
+                  </button>
+                </div>
+
+                {/* 4 Time Units */}
+                <div className="w-full flex justify-between items-center gap-2 px-0 sm:px-1">
+                  <TimeUnit value={timeLeft.days} label="DAYS" />
+                  <TimeUnit value={timeLeft.hours} label="HOURS" />
+                  <TimeUnit value={timeLeft.minutes} label="MINUTES" />
+                  <TimeUnit value={timeLeft.seconds} label="SECONDS" />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

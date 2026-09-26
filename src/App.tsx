@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { Hero } from './components/Hero';
 import { Countdown } from './components/Countdown';
 import { FamilyInvitation } from './components/FamilyInvitation';
@@ -35,6 +36,16 @@ function PublicView() {
   const [isHeroEnded, setIsHeroEnded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showScrollFlash, setShowScrollFlash] = useState(false);
+  
+  // Scratch card reveal state: inside website, visitor faces the scratch card first
+  const [isInvitationRevealed, setIsInvitationRevealed] = useState(() => {
+    try {
+      return sessionStorage.getItem('invitation_card_scratched') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   const openingVideoRef = React.useRef<HTMLVideoElement>(null);
 
   // Auto-scroll upward animation logic if user hasn't scrolled yet
@@ -58,7 +69,7 @@ function PublicView() {
     };
   }, []);
 
-  // Trigger 2-3 times upward-initial position scroll animation
+  // Trigger 2-3 times upward-initial position scroll animation after card is revealed
   const triggerUpwardBounceSequence = React.useCallback(() => {
     if (hasUserScrolledRef.current || window.scrollY > 20) return;
     autoScrollTriggeredRef.current = true;
@@ -105,19 +116,19 @@ function PublicView() {
     };
   }, []);
 
-  // Make the hero section move upward-initial 2-3 times after 3 seconds of being on hero section
+  // Make the hero section move upward-initial 2-3 times after card is revealed and user stays at top
   useEffect(() => {
-    if (viewState === 'main') {
+    if (viewState === 'main' && isInvitationRevealed) {
       const timer = setTimeout(() => {
         triggerUpwardBounceSequence();
-      }, 3000);
+      }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [viewState, triggerUpwardBounceSequence]);
+  }, [viewState, isInvitationRevealed, triggerUpwardBounceSequence]);
 
-  // Full screen instant flash animation for 1 sec if someone has not scrolled for 10 seconds
+  // Full screen instant flash animation for 1 sec if someone has not scrolled after invitation is revealed
   useEffect(() => {
-    if (viewState === 'main') {
+    if (viewState === 'main' && isInvitationRevealed) {
       const flashTimer = setTimeout(() => {
         if (!hasUserScrolledRef.current && window.scrollY < 20) {
           setShowScrollFlash(true);
@@ -129,7 +140,7 @@ function PublicView() {
       }, 10000);
       return () => clearTimeout(flashTimer);
     }
-  }, [viewState]);
+  }, [viewState, isInvitationRevealed]);
 
   useEffect(() => {
     async function loadData() {
@@ -156,19 +167,37 @@ function PublicView() {
 
   const handleHeroVideoEnd = () => {
     setIsHeroEnded(true);
-    // When hero video ends, smoothly trigger upward bounce sequence if not scrolled yet
+  };
+
+  const handleCardScratched = () => {
+    setIsInvitationRevealed(true);
+    try {
+      sessionStorage.setItem('invitation_card_scratched', 'true');
+    } catch {}
+
+    // Gentle scroll hint to indicate unlocked sections below
     setTimeout(() => {
-      triggerUpwardBounceSequence();
-    }, 300);
+      if (!hasUserScrolledRef.current && window.scrollY < 30) {
+        window.scrollBy({
+          top: 130,
+          behavior: 'smooth'
+        });
+      }
+    }, 1600);
   };
 
   const handleScrollDownClick = () => {
     hasUserScrolledRef.current = true;
     setShowScrollFlash(false);
-    window.scrollTo({
-      top: window.innerHeight * 0.92,
-      behavior: 'smooth'
-    });
+    const heroElem = document.getElementById('hero-section');
+    if (heroElem) {
+      heroElem.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({
+        top: window.innerHeight * 0.92,
+        behavior: 'smooth'
+      });
+    }
   };
 
   const handleThumbnailClick = () => {
@@ -251,68 +280,160 @@ function PublicView() {
       {/* Main Content Sections - strictly invisible until transition finishes */}
       <main className={`w-full min-h-[100svh] bg-[#FDF0F4] relative overflow-hidden transition-opacity duration-700 ${viewState === 'main' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         
-        {/* HERO SECTION */}
-        <Hero 
-          data={data} 
-          shouldPlayVideo={viewState === 'main'} 
-          onVideoEnd={handleHeroVideoEnd}
+        {/* ========================================================
+            1. SCRATCH CARD SECTION
+            First section visitor faces on entry.
+            Scratching reveals date, starts countdown, and unlocks the other sections!
+        ======================================================== */}
+        <Countdown 
+          targetDate={data.weddingDate} 
+          dateFormatted={data.weddingDateFormatted}
+          dayFormatted={data.weddingDayFormatted}
+          timeFormatted={data.weddingTimeFormatted}
+          venueName={data.venue?.name}
+          onScratched={handleCardScratched}
+          isInitiallyScratched={isInvitationRevealed}
         />
 
-        {/* Transparent & slightly visible scroll down prompt positioned just below the hero section and top of next section */}
-        <ScrollPrompt onClick={handleScrollDownClick} />
+        {/* Once card is scratched, show prominent scroll prompt with floating marigold petals */}
+        {isInvitationRevealed && (
+          <ScrollPrompt onClick={handleScrollDownClick} />
+        )}
 
-        {/* Anchor for smooth scroll from hero button */}
-        <div id="invitation-content" className="relative -top-2" />
-        
-        <ParallaxDivider />
-        {/* SECTION 1 — COUNTDOWN */}
-        <Reveal delay={0.1}>
-          <Countdown 
-            targetDate={data.weddingDate} 
-            dateFormatted={data.weddingDateFormatted}
-            dayFormatted={data.weddingDayFormatted}
-            timeFormatted={data.weddingTimeFormatted}
-            venueName={data.venue?.name}
-          />
-        </Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 2 — FAMILY INVITATION */}
-        <Reveal delay={0.1}><FamilyInvitation data={data} /></Reveal>
-        
-        {/* SECTION 3 — LIGHT A DIYA */}
-        <Reveal delay={0.1}><LightDiya /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 4 — INVITATION MESSAGE */}
-        <Reveal delay={0.1}><InvitationMessage message={data.invitationMessage} isHeroEnded={isHeroEnded} /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 5 — KAROLI WALI MATA */}
-        <Reveal delay={0.1}><DeviShrine data={data} /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 6 — EVENT DETAILS */}
-        <Reveal delay={0.1}><Events events={data.events} globalLogo={data.globalLogo} mataKiChowkiImageUrl={data.mataKiChowkiImageUrl} /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 7 — VENUE */}
-        <Reveal delay={0.1}><Venue venue={data.venue} groom={data.groom} bride={data.bride} weddingDate={data.weddingDate} /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 8 — RSVP */}
-        <Reveal delay={0.1}><RSVP /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 9 — CONTACT */}
-        <Reveal delay={0.1}><Contact data={data} /></Reveal>
-        
-        <ParallaxDivider />
-        {/* SECTION 10 — FINAL CLOSING */}
-        <Reveal delay={0.1}><ClosingMessage data={data} /></Reveal>
-        
-        {/* FOOTER */}
-        <Reveal delay={0.1}><Footer data={data} /></Reveal>
+        {/* ========================================================
+            REVEALED SECTIONS
+            Becomes visible and accessible once the card is scratched!
+        ======================================================== */}
+        {isInvitationRevealed && (
+          <motion.div
+            initial={{ opacity: 0, y: 35 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, ease: "easeOut" }}
+            className="w-full flex flex-col items-center"
+          >
+            <ParallaxDivider />
+
+            {/* ========================================================
+                2. HERO SECTION
+            ======================================================== */}
+            <div className="w-full">
+              <Hero 
+                data={data} 
+                shouldPlayVideo={viewState === 'main'} 
+                onVideoEnd={handleHeroVideoEnd}
+              />
+            </div>
+
+            <ParallaxDivider />
+
+            {/* ========================================================
+                3. VENUE SECTION
+            ======================================================== */}
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <Venue 
+                  venue={data.venue} 
+                  groom={data.groom} 
+                  bride={data.bride} 
+                  weddingDate={data.weddingDate} 
+                />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            {/* ========================================================
+                4. KAROLI WALI MATA WITH IMAGE SECTION
+            ======================================================== */}
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <DeviShrine data={data} />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            {/* ========================================================
+                5. जय माता दी MESSAGE SECTION
+            ======================================================== */}
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <InvitationMessage 
+                  message={data.invitationMessage} 
+                  isHeroEnded={isHeroEnded} 
+                />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            {/* ========================================================
+                AFTER THIS ALL OTHER REQUIRED SECTIONS:
+                6. Family Invitation
+                7. Events Details
+                8. Light a Diya
+                9. RSVP
+                10. Contact
+                11. Closing Message
+                12. Footer
+            ======================================================== */}
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <FamilyInvitation data={data} />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <Events 
+                  events={data.events} 
+                  globalLogo={data.globalLogo} 
+                  mataKiChowkiImageUrl={data.mataKiChowkiImageUrl} 
+                />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <LightDiya />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <RSVP />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <Contact data={data} />
+              </Reveal>
+            </div>
+
+            <ParallaxDivider />
+
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <ClosingMessage data={data} />
+              </Reveal>
+            </div>
+
+            <div className="w-full">
+              <Reveal delay={0.1}>
+                <Footer data={data} />
+              </Reveal>
+            </div>
+          </motion.div>
+        )}
       </main>
 
       {/* Opening Video Overlay */}

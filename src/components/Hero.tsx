@@ -38,7 +38,10 @@ export function Hero({ data, onVideoEnd }: HeroProps) {
   };
 
   return (
-    <section className="relative w-full h-[100svh] min-h-[100svh] overflow-hidden bg-[#FDF0F4] flex items-center justify-center">
+    <section 
+      id="hero-section"
+      className="relative w-full h-[100svh] min-h-[100svh] overflow-hidden bg-[#FDF0F4] flex items-center justify-center"
+    >
       {data.heroVideoUrl ? (
         <video
           ref={videoRef}
