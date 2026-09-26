@@ -14,7 +14,7 @@ export function EnvironmentEffects() {
       {FLOATING_CONFIGS.map((config, index) => (
         <div
           key={`falling-item-${index}`}
-          className="fixed pointer-events-none select-none drop-shadow-sm opacity-50"
+          className="fixed pointer-events-none select-none drop-shadow-sm opacity-40"
           style={{
             left: `${config.left}%`,
             animation: `petal-fall ${config.durationFall}s linear infinite`,

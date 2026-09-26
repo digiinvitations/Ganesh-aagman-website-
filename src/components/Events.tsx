@@ -20,7 +20,7 @@ export function Events({ events, globalLogo, mataKiChowkiImageUrl }: EventsProps
   };
 
   return (
-    <section className="py-20 px-4 sm:px-6 bg-[#FDF0F4] flex flex-col items-center relative overflow-hidden">
+    <section className="py-10 sm:py-14 px-3 sm:px-6 bg-[#FDF0F4] flex flex-col items-center relative overflow-hidden">
       
       {/* Background Soft Radial Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(230,81,0,0.05)_0%,_transparent_70%)] pointer-events-none" />

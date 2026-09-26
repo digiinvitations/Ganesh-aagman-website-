@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { getWeddingData, saveWeddingData, checkTemplateExists } from "../services/db";
 import { WeddingData } from "../types";
-import { Save, Image as ImageIcon, ArrowLeft, Download, Upload, Plus, Trash2, Share2, Wand2, Smartphone, Sparkles, Undo2, Maximize2 } from "lucide-react";
+import { Save, Image as ImageIcon, ArrowLeft, Download, Upload, Plus, Trash2, Share2 } from "lucide-react";
 
 export function AdminPanel() {
   const [searchParams] = useSearchParams();
@@ -13,16 +13,13 @@ export function AdminPanel() {
   const [saving, setSaving] = useState(false);
   const [templateId, setTemplateId] = useState(currentTemplateId);
 
-  // OG Image Dimension & Format States
+  // OG Image Dimension States (for displaying real native resolution)
   const [ogDimensions, setOgDimensions] = useState<{
     width: number;
     height: number;
     ratioText: string;
     aspectRatio: number;
   } | null>(null);
-  const [ogPreviewTab, setOgPreviewTab] = useState<'card' | 'square' | 'original'>('card');
-  const [isFormattingOg, setIsFormattingOg] = useState(false);
-  const [originalOgUrlBackup, setOriginalOgUrlBackup] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -45,15 +42,15 @@ export function AdminPanel() {
       const ratio = w / h;
       let ratioText = "";
       if (Math.abs(ratio - 1.905) < 0.15 || Math.abs(ratio - (16/9)) < 0.15) {
-        ratioText = "Standard Landscape 1.91:1 / 16:9";
+        ratioText = "Landscape (1.91:1 / 16:9)";
       } else if (Math.abs(ratio - 1) < 0.1) {
-        ratioText = "Square 1:1";
+        ratioText = "Square (1:1)";
       } else if (ratio < 0.65) {
-        ratioText = "Vertical Story 9:16";
+        ratioText = "Vertical (9:16)";
       } else if (ratio < 0.9) {
-        ratioText = "Portrait 4:5 / 3:4";
+        ratioText = "Portrait (4:5 / 3:4)";
       } else if (ratio >= 0.9 && ratio < 1.3) {
-        ratioText = "Near Square / Traditional";
+        ratioText = "Near Square";
       } else {
         ratioText = "Wide Landscape";
       }
@@ -66,83 +63,6 @@ export function AdminPanel() {
     };
     img.src = data.ogImageUrl;
   }, [data?.ogImageUrl]);
-
-  const formatToSocialCanvas = async (imageSrc: string) => {
-    if (!imageSrc) return;
-    setIsFormattingOg(true);
-    try {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = imageSrc;
-      });
-
-      const canvas = document.createElement("canvas");
-      canvas.width = 1200;
-      canvas.height = 630;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Could not initialize canvas context");
-
-      // 1. Fill base with deep devotional burgundy
-      ctx.fillStyle = "#22040B";
-      ctx.fillRect(0, 0, 1200, 630);
-
-      // 2. Ambient softly blurred devotional backdrop using the image
-      ctx.save();
-      ctx.filter = "blur(26px) brightness(0.4) saturate(1.25)";
-      const bgScale = Math.max(1200 / img.naturalWidth, 630 / img.naturalHeight);
-      const bgW = img.naturalWidth * bgScale;
-      const bgH = img.naturalHeight * bgScale;
-      const bgX = (1200 - bgW) / 2;
-      const bgY = (630 - bgH) / 2;
-      ctx.drawImage(img, bgX, bgY, bgW, bgH);
-      ctx.restore();
-
-      // Subtle vignette on left & right sides
-      const vignette = ctx.createLinearGradient(0, 0, 1200, 0);
-      vignette.addColorStop(0, "rgba(34, 4, 11, 0.85)");
-      vignette.addColorStop(0.18, "rgba(34, 4, 11, 0.15)");
-      vignette.addColorStop(0.82, "rgba(34, 4, 11, 0.15)");
-      vignette.addColorStop(1, "rgba(34, 4, 11, 0.85)");
-      ctx.fillStyle = vignette;
-      ctx.fillRect(0, 0, 1200, 630);
-
-      // 3. Contain the FULL real image without cropping any edges
-      const maxW = 1200 - 48;
-      const maxH = 630 - 36;
-      const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-      const fgW = Math.round(img.naturalWidth * scale);
-      const fgH = Math.round(img.naturalHeight * scale);
-      const fgX = Math.round((1200 - fgW) / 2);
-      const fgY = Math.round((630 - fgH) / 2);
-
-      // Golden shadow & border frame around the real image
-      ctx.save();
-      ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
-      ctx.shadowBlur = 28;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 6;
-
-      ctx.strokeStyle = "#D4AF37";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(fgX - 2, fgY - 2, fgW + 4, fgH + 4);
-
-      // Draw real foreground image intact
-      ctx.drawImage(img, fgX, fgY, fgW, fgH);
-      ctx.restore();
-
-      const formattedUrl = canvas.toDataURL("image/jpeg", 0.92);
-      setOriginalOgUrlBackup(imageSrc);
-      handleChange("ogImageUrl", formattedUrl);
-    } catch (err) {
-      console.error("Canvas formatting failed", err);
-      alert("Could not auto-format image automatically. If using an external image URL, try uploading the image file directly!");
-    } finally {
-      setIsFormattingOg(false);
-    }
-  };
 
   if (!data) return <div className="p-8 font-serif text-[#B8141B]">Loading Admin Panel...</div>;
 
@@ -384,14 +304,14 @@ export function AdminPanel() {
               </h2>
               {ogDimensions && (
                 <span className="text-[11px] font-sans font-bold bg-[#FFFDF7] border border-[#D4AF37]/60 text-[#B8141B] px-2.5 py-1 rounded-full shadow-xs">
-                  {ogDimensions.ratioText} ({ogDimensions.width} × {ogDimensions.height} px)
+                  {ogDimensions.width} × {ogDimensions.height} px ({ogDimensions.ratioText})
                 </span>
               )}
             </div>
 
             <p className="text-xs text-[#7A4B5B] font-serif mb-4">
               When you share this invitation link on <strong>WhatsApp, Facebook, iMessage, Twitter/X, or Instagram</strong>, this preview card appears.
-              Social platforms normally display preview cards in <strong>1200 × 630 px (1.91:1 ratio)</strong> or square. 
+              The image is displayed in <strong>full size and its real native ratio</strong> so nothing gets cropped or compressed to a small thumbnail.
             </p>
 
             <div className="space-y-4">
@@ -417,10 +337,7 @@ export function AdminPanel() {
                 {data.ogImageUrl && (
                   <button 
                     type="button"
-                    onClick={() => {
-                      handleChange("ogImageUrl", "");
-                      setOriginalOgUrlBackup("");
-                    }}
+                    onClick={() => handleChange("ogImageUrl", "")}
                     className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 bg-[#FFFDF7] border border-red-200 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Remove OG Image
@@ -428,200 +345,33 @@ export function AdminPanel() {
                 )}
               </div>
 
-              {/* Smart Auto-Format Tool for Vertical / Square / Custom Ratio Images */}
+              {/* Normal Full Size OG Image Preview in Real Native Ratio */}
               {data.ogImageUrl && (
-                <div className="p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 shadow-xs space-y-3">
-                  <div className="flex items-start gap-2.5">
-                    <Sparkles className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#B8141B]">
-                        Zero-Crop Social Framing Helper
-                      </h4>
-                      <p className="text-[11px] text-[#7A4B5B] font-serif mt-0.5 leading-relaxed">
-                        If your invitation is a <strong>vertical poster, portrait photo (9:16 or 4:5), or square</strong>, WhatsApp and Facebook would normally chop off the top (Maa's crown) or bottom (dates/venue).
-                        Click below to automatically fit 100% of your real image into the standard 1200×630 frame with an elegant devotional blurred backdrop and gold border.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
-                    <button
-                      type="button"
-                      disabled={isFormattingOg}
-                      onClick={() => data.ogImageUrl && formatToSocialCanvas(data.ogImageUrl)}
-                      className="flex items-center gap-2 bg-[#800C12] hover:bg-[#68070C] text-[#FFFDF7] px-3.5 py-2 rounded-xl text-xs uppercase font-bold transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-                    >
-                      <Wand2 className="w-3.5 h-3.5 text-[#FFD54F]" />
-                      {isFormattingOg ? "Formatting Image..." : "✨ Fit Entire Image on 1200×630 (Zero-Crop Guarantee)"}
-                    </button>
-
-                    {originalOgUrlBackup && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleChange("ogImageUrl", originalOgUrlBackup);
-                          setOriginalOgUrlBackup("");
-                        }}
-                        className="flex items-center gap-1.5 text-xs text-[#7A4B5B] hover:text-[#B8141B] bg-white border border-[#D4AF37]/50 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors"
-                      >
-                        <Undo2 className="w-3.5 h-3.5" />
-                        Revert to Raw Image
-                      </button>
+                <div className="mt-4 p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 max-w-lg">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-serif font-bold text-[#B8141B] uppercase tracking-wider">
+                      Full Size OG Image Preview (Real Ratio)
+                    </span>
+                    {ogDimensions && (
+                      <span className="text-[11px] font-sans font-bold bg-[#FAF2F5] border border-[#F3C3D2] text-[#B8141B] px-2.5 py-0.5 rounded-full">
+                        {ogDimensions.width} × {ogDimensions.height} px
+                      </span>
                     )}
                   </div>
+
+                  <div className="rounded-xl overflow-hidden border border-[#D4AF37]/40 shadow-sm bg-white p-2 flex items-center justify-center">
+                    <img 
+                      src={data.ogImageUrl} 
+                      alt="Full Size OG Image" 
+                      className="w-full max-h-[460px] object-contain rounded-lg mx-auto block" 
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-[#7A4B5B] italic font-serif mt-2 text-center">
+                    Preview in full ratio as it appears when sharing on WhatsApp, Facebook, iMessage & Twitter.
+                  </p>
                 </div>
               )}
-
-              {/* Multi-Platform Live Preview Switcher */}
-              <div className="mt-4 p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 max-w-xl">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B]">
-                    Multi-Platform Share Preview:
-                  </span>
-                  
-                  {/* Platform Switcher Tabs */}
-                  <div className="inline-flex rounded-lg p-0.5 bg-[#FAF2F5] border border-[#F3C3D2] text-[11px] font-sans font-bold">
-                    <button
-                      type="button"
-                      onClick={() => setOgPreviewTab('card')}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
-                        ogPreviewTab === 'card'
-                          ? 'bg-[#B8141B] text-[#FFFDF7] shadow-xs'
-                          : 'text-[#7A4B5B] hover:text-[#B8141B]'
-                      }`}
-                    >
-                      WhatsApp / FB (1.91:1)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setOgPreviewTab('square')}
-                      className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
-                        ogPreviewTab === 'square'
-                          ? 'bg-[#B8141B] text-[#FFFDF7] shadow-xs'
-                          : 'text-[#7A4B5B] hover:text-[#B8141B]'
-                      }`}
-                    >
-                      <Smartphone className="w-3 h-3" /> Chat (1:1)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setOgPreviewTab('original')}
-                      className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1 ${
-                        ogPreviewTab === 'original'
-                          ? 'bg-[#B8141B] text-[#FFFDF7] shadow-xs'
-                          : 'text-[#7A4B5B] hover:text-[#B8141B]'
-                      }`}
-                    >
-                      <Maximize2 className="w-3 h-3" /> Real Ratio
-                    </button>
-                  </div>
-                </div>
-                
-                {/* TAB 1: WhatsApp / Facebook Large Link Card */}
-                {ogPreviewTab === 'card' && (
-                  <div className="rounded-xl overflow-hidden border border-[#F3C3D2] shadow-sm bg-[#FAF2F5]">
-                    <div className="w-full aspect-[1.91/1] bg-[#1E0409] relative overflow-hidden flex items-center justify-center">
-                      {data.ogImageUrl ? (
-                        <>
-                          {/* Ambient soft backdrop to fill empty bars */}
-                          <img 
-                            src={data.ogImageUrl} 
-                            alt="" 
-                            className="absolute inset-0 w-full h-full object-cover blur-md scale-110 opacity-40 select-none pointer-events-none" 
-                          />
-                          {/* Real image in full complete view without cropping */}
-                          <img 
-                            src={data.ogImageUrl} 
-                            alt="OG Preview" 
-                            className="relative z-10 max-h-full max-w-full object-contain drop-shadow-md select-none" 
-                          />
-                        </>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center gap-1 text-[#7A4B5B] p-4 text-center">
-                          <span className="text-2xl">🪔</span>
-                          <span className="text-xs font-serif italic">Default Divine Mata Ki Chowki Cover</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-3 bg-[#FFFDF7] border-t border-[#F3C3D2]">
-                      <span className="text-[10px] text-[#7A4B5B] uppercase tracking-wider block font-semibold">
-                        WHATSAPP / FACEBOOK PREVIEW
-                      </span>
-                      <h4 className="font-serif font-bold text-sm text-[#B8141B] line-clamp-1 mt-0.5">
-                        Mata Ki Chowki Invitation | Karoli Wali Mata
-                      </h4>
-                      <p className="text-[11px] text-[#3C1B26] line-clamp-2 mt-1 leading-snug">
-                        With immense devotion and heartfelt joy, the Goyal Family cordially invites you to Mata Ki Chowki on 24 October 2026 at Krishna Palace, Agra.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 2: WhatsApp Chat Bubble Square Thumbnail (1:1) */}
-                {ogPreviewTab === 'square' && (
-                  <div className="p-3 bg-[#FAF2F5] rounded-xl border border-[#F3C3D2] flex items-center gap-3">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-lg overflow-hidden bg-[#1E0409] relative border border-[#D4AF37]/50 flex items-center justify-center shadow-xs">
-                      {data.ogImageUrl ? (
-                        <>
-                          <img 
-                            src={data.ogImageUrl} 
-                            alt="" 
-                            className="absolute inset-0 w-full h-full object-cover blur-sm scale-110 opacity-40" 
-                          />
-                          <img 
-                            src={data.ogImageUrl} 
-                            alt="Square Preview" 
-                            className="relative z-10 max-h-full max-w-full object-contain" 
-                          />
-                        </>
-                      ) : (
-                        <span className="text-2xl">🪔</span>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-[#7A4B5B] uppercase tracking-wider block font-semibold">
-                        CHAT BUBBLE PREVIEW
-                      </span>
-                      <h4 className="font-serif font-bold text-xs text-[#B8141B] line-clamp-1">
-                        Mata Ki Chowki Invitation
-                      </h4>
-                      <p className="text-[10px] text-[#3C1B26] line-clamp-2">
-                        Saturday, 24 October 2026 • Krishna Palace, Agra
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: Real Image Aspect Ratio (Uncropped Full View) */}
-                {ogPreviewTab === 'original' && (
-                  <div className="p-3 bg-[#FAF2F5] rounded-xl border border-[#F3C3D2] flex flex-col items-center">
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="text-[11px] font-sans font-bold text-[#B8141B] bg-white border border-[#D4AF37]/50 px-2.5 py-0.5 rounded-full">
-                        {ogDimensions ? `${ogDimensions.width} × ${ogDimensions.height} px (${ogDimensions.ratioText})` : "Original Ratio"}
-                      </span>
-                    </div>
-
-                    <div className="max-h-80 max-w-full rounded-lg overflow-hidden border-2 border-[#D4AF37]/60 shadow-md bg-white">
-                      {data.ogImageUrl ? (
-                        <img 
-                          src={data.ogImageUrl} 
-                          alt="Real Uncropped Ratio" 
-                          className="max-h-80 w-auto object-contain mx-auto" 
-                        />
-                      ) : (
-                        <div className="p-8 text-center text-xs text-[#7A4B5B]">
-                          No OG image set yet.
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-[#7A4B5B] italic font-serif mt-2 text-center">
-                      Showing original photo uncropped with exact native aspect ratio.
-                    </p>
-                  </div>
-                )}
-
-              </div>
             </div>
           </section>
 

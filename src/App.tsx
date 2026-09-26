@@ -34,6 +34,39 @@ function PublicView() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const openingVideoRef = React.useRef<HTMLVideoElement>(null);
 
+  // Auto-scroll animation logic if user hasn't scrolled yet
+  const hasUserScrolledRef = React.useRef(false);
+  const autoScrollTriggeredRef = React.useRef(false);
+
+  useEffect(() => {
+    const handleUserScroll = () => {
+      if (window.scrollY > 30) {
+        hasUserScrolledRef.current = true;
+      }
+    };
+    window.addEventListener('scroll', handleUserScroll, { passive: true });
+    window.addEventListener('wheel', handleUserScroll, { passive: true });
+    window.addEventListener('touchmove', handleUserScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleUserScroll);
+      window.removeEventListener('wheel', handleUserScroll);
+      window.removeEventListener('touchmove', handleUserScroll);
+    };
+  }, []);
+
+  const triggerAutoScrollNudge = React.useCallback(() => {
+    if (autoScrollTriggeredRef.current || hasUserScrolledRef.current) return;
+    if (window.scrollY > 30) return;
+    
+    autoScrollTriggeredRef.current = true;
+    
+    // Smoothly scroll down a small part (~220px) to reveal the next section
+    window.scrollBy({
+      top: 230,
+      behavior: 'smooth'
+    });
+  }, []);
+
   useEffect(() => {
     async function loadData() {
       const dbData = await getWeddingData(templateId);
@@ -50,11 +83,49 @@ function PublicView() {
   const handleTransitionEnd = () => {
     setIsTransitioning(false);
     setViewState('main');
+
+    // If opening video ended and transitioned to main, and no hero video is present, trigger gentle peek scroll after 2s
+    if (!data?.heroVideoUrl) {
+      setTimeout(() => {
+        triggerAutoScrollNudge();
+      }, 2000);
+    }
   };
 
   const handleVideoEnd = () => {
     setIsTransitioning(true);
     setViewState('transition');
+  };
+
+  const handleHeroVideoEnd = () => {
+    setIsHeroEnded(true);
+    // Smoothly nudge the website down a small part after the hero video ends
+    setTimeout(() => {
+      triggerAutoScrollNudge();
+    }, 500);
+  };
+
+  // If user enters main view with static hero image, trigger scroll hint after 3.8s if no scroll occurred
+  useEffect(() => {
+    if (viewState === 'main' && !data?.heroVideoUrl) {
+      const timer = setTimeout(() => {
+        triggerAutoScrollNudge();
+      }, 3800);
+      return () => clearTimeout(timer);
+    }
+  }, [viewState, data?.heroVideoUrl, triggerAutoScrollNudge]);
+
+  const handleScrollDownClick = () => {
+    hasUserScrolledRef.current = true;
+    const nextElem = document.getElementById('invitation-content');
+    if (nextElem) {
+      nextElem.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollTo({
+        top: window.innerHeight * 0.85,
+        behavior: 'smooth'
+      });
+    }
   };
 
   const handleThumbnailClick = () => {
@@ -100,6 +171,7 @@ function PublicView() {
       setMetaTag('property', 'og:description', pageDesc);
       setMetaTag('name', 'twitter:title', pageTitle);
       setMetaTag('name', 'twitter:description', pageDesc);
+      setMetaTag('name', 'twitter:card', 'summary_large_image');
 
       if (data.ogImageUrl) {
         setMetaTag('property', 'og:image', data.ogImageUrl);
@@ -110,12 +182,6 @@ function PublicView() {
         img.onload = () => {
           setMetaTag('property', 'og:image:width', String(img.naturalWidth));
           setMetaTag('property', 'og:image:height', String(img.naturalHeight));
-          const ratio = img.naturalWidth / img.naturalHeight;
-          if (ratio < 1.1) {
-            setMetaTag('name', 'twitter:card', 'summary');
-          } else {
-            setMetaTag('name', 'twitter:card', 'summary_large_image');
-          }
         };
         img.src = data.ogImageUrl;
       }
@@ -146,8 +212,12 @@ function PublicView() {
         <Hero 
           data={data} 
           shouldPlayVideo={viewState === 'main'} 
-          onVideoEnd={() => setIsHeroEnded(true)} 
+          onVideoEnd={handleHeroVideoEnd}
+          onScrollDown={handleScrollDownClick}
         />
+
+        {/* Anchor for smooth scroll from hero button */}
+        <div id="invitation-content" className="relative -top-2" />
         
         <ParallaxDivider />
         {/* SECTION 1 — COUNTDOWN */}
