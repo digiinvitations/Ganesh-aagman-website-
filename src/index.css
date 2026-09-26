@@ -43,17 +43,17 @@ body {
   background: #D4AF37;
 }
 
-/* Environment Animations for marigold petals & sacred sparkles */
+/* Environment Animations for marigold petals & sacred sparkles (delicate, low-density drift) */
 @keyframes petal-fall {
   0% { top: -10%; opacity: 0; }
-  10% { opacity: 0.9; }
-  90% { opacity: 0.9; }
+  12% { opacity: 0.55; }
+  85% { opacity: 0.55; }
   100% { top: 110%; opacity: 0; }
 }
 
 @keyframes petal-sway {
   0%, 100% { transform: translateX(0px) rotate(0deg); }
-  50% { transform: translateX(45px) rotate(35deg); }
+  50% { transform: translateX(22px) rotate(20deg); }
 }
 
 @keyframes bell-ring {

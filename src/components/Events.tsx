@@ -20,66 +20,58 @@ export function Events({ events, globalLogo, mataKiChowkiImageUrl }: EventsProps
   };
 
   return (
-    <section className="py-24 px-4 sm:px-6 bg-[#FDF0F4] flex flex-col items-center relative overflow-hidden border-t border-[#F3C3D2]/50">
+    <section className="py-20 px-4 sm:px-6 bg-[#FDF0F4] flex flex-col items-center relative overflow-hidden">
       
       {/* Background Soft Radial Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(230,81,0,0.05)_0%,_transparent_70%)] pointer-events-none" />
 
-      {/* Main Section Heading */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="flex flex-col items-center text-center relative z-10 mb-8"
-      >
-        <span className="text-xl mb-1 text-[#E65100]">🪔</span>
-        <h2 className="font-serif text-3xl sm:text-4xl uppercase tracking-[0.15em] text-[#B8141B] font-extrabold drop-shadow-sm mb-2">
-          MATA KI CHOWKI
-        </h2>
-        <p className="font-serif text-xs sm:text-sm uppercase tracking-[0.25em] text-[#E65100] font-bold">
-          AN EVENING OF DIVINE BLESSINGS
-        </p>
+      {/* Main Section Heading: displayed with default event details box; omitted when custom image is embedded cleanly without separations */}
+      {!mataKiChowkiImageUrl && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center text-center relative z-10 mb-8"
+        >
+          <span className="text-xl mb-1 text-[#E65100]">🪔</span>
+          <h2 className="font-serif text-3xl sm:text-4xl uppercase tracking-[0.15em] text-[#B8141B] font-extrabold drop-shadow-sm mb-2">
+            MATA KI CHOWKI
+          </h2>
+          <p className="font-serif text-xs sm:text-sm uppercase tracking-[0.25em] text-[#E65100] font-bold">
+            AN EVENING OF DIVINE BLESSINGS
+          </p>
 
-        <div className="flex items-center justify-center gap-3 mt-4">
-          <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]" />
-          <span className="text-sm">🌼</span>
-          <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]" />
-        </div>
-      </motion.div>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <span className="text-sm">🌼</span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
+        </motion.div>
+      )}
 
-      {/* Devotional Event Content Box */}
+      {/* Devotional Event Content / Cleanly Embedded Image */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 25 }}
+        initial={{ opacity: 0, scale: 0.98, y: 20 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.9 }}
-        className="w-full max-w-md mx-auto relative z-10"
+        className="w-full max-w-xl mx-auto relative z-10 flex justify-center"
       >
         {/* 
-          MATA KI CHOWKI CONTENT BOX:
-          If mataKiChowkiImageUrl is set from Admin, replace full content box with single image content
-          with the exact same ratio & royal golden framing as the created content box.
+          MATA KI CHOWKI IMAGE:
+          Embedded cleanly and directly without any box, borders, frames, or separations.
         */}
         {mataKiChowkiImageUrl ? (
-          <div className="w-full bg-[#FFFDF7] rounded-3xl border-2 border-[#D4AF37]/60 shadow-[0_12px_35px_rgba(212,175,55,0.15)] relative overflow-hidden group">
-            {/* Inner hairline border */}
-            <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/20 pointer-events-none z-10" />
-
-            {/* Corner traditional stars */}
-            <span className="absolute top-3 left-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
-            <span className="absolute top-3 right-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
-            <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
-            <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
-
+          <div className="w-full flex justify-center items-center">
             <img 
               src={mataKiChowkiImageUrl} 
               alt="Mata Ki Chowki" 
-              className="w-full h-auto object-cover rounded-3xl block transition-transform duration-500 group-hover:scale-[1.01]" 
+              className="w-full h-auto object-contain block max-w-lg mx-auto" 
             />
           </div>
         ) : (
-          <div className="bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.14)] relative overflow-hidden flex flex-col items-center text-center">
+          <div className="w-full max-w-md bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.14)] relative overflow-hidden flex flex-col items-center text-center">
             
             {/* Inner hairline border */}
             <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />

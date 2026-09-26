@@ -828,7 +828,7 @@ export function AdminPanel() {
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#B8141B] flex items-center gap-1.5">
                   <ImageIcon className="w-4 h-4 text-[#E65100]" />
-                  Replace Full Content Box with Single Image (Mata Ki Chowki)
+                  Embed Single Image for Mata Ki Chowki (No Box / No Separations)
                 </span>
                 {data.mataKiChowkiImageUrl && (
                   <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
@@ -838,11 +838,11 @@ export function AdminPanel() {
               </div>
 
               <p className="text-[11px] text-[#7A4B5B] font-serif leading-relaxed">
-                If provided, this image will replace the entire Mata Ki Chowki card with your custom designed image with the exact same ratio, rounded border, and corner motifs.
+                If provided, this image will be embedded cleanly and directly into the Mata Ki Chowki section without any enclosing box, borders, frames, or divider separations.
               </p>
 
               <Input 
-                label="Mata Ki Chowki Card Image URL" 
+                label="Mata Ki Chowki Image URL" 
                 value={data.mataKiChowkiImageUrl || ""} 
                 onChange={(v) => handleChange("mataKiChowkiImageUrl", v)} 
                 placeholder="https://..."
@@ -851,7 +851,7 @@ export function AdminPanel() {
               <div className="flex flex-wrap items-center gap-3">
                 <label className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-4 py-2 rounded-xl hover:bg-[#9E0E15] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
                   <ImageIcon className="w-4 h-4 text-[#FFBF00]" />
-                  Upload Mata Ki Chowki Card File
+                  Upload Mata Ki Chowki Image File
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -875,13 +875,13 @@ export function AdminPanel() {
               {data.mataKiChowkiImageUrl && (
                 <div className="mt-3 p-3 bg-[#FAF2F5] rounded-xl border border-[#D4AF37]/50 max-w-xs">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
-                    Card Preview (Same Ratio & Border):
+                    Direct Embedded Preview (No Box Framing):
                   </span>
-                  <div className="w-48 rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-sm mx-auto bg-white">
+                  <div className="w-48 overflow-hidden mx-auto">
                     <img 
                       src={data.mataKiChowkiImageUrl} 
-                      alt="Mata Ki Chowki Card Preview" 
-                      className="w-full h-auto object-cover" 
+                      alt="Mata Ki Chowki Preview" 
+                      className="w-full h-auto object-contain block" 
                     />
                   </div>
                 </div>
