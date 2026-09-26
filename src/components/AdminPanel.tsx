@@ -625,12 +625,16 @@ export function AdminPanel() {
             </div>
           </section>
 
-          {/* SECTION: FAMILY INVITATION */}
+          {/* SECTION: FAMILY INVITATION (SUBH AAGMAN) */}
           <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
-            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span>🪔</span> Section 2: Family Invitation
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span>🪔</span> Section 2: Subh Aagman (Family Invitation)
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p className="text-xs text-[#7A4B5B] font-serif mb-4">
+              Customize family elders and names, or optionally <strong>replace the full content box with a single card image</strong> in the exact same rounded golden-bordered frame.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
               <Input 
                 label="Elder 1" 
                 value={data.familyMembers?.elder1 || ""} 
@@ -655,6 +659,71 @@ export function AdminPanel() {
                 onChange={(v) => handleChange("familyMembers.familyName", v)} 
                 placeholder="THE GOYAL FAMILY"
               />
+            </div>
+
+            {/* Image Replacement Box for Subh Aagman */}
+            <div className="p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B8141B] flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-[#E65100]" />
+                  Replace Full Content Box with Single Image (Subh Aagman)
+                </span>
+                {data.subhAagmanImageUrl && (
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+                    Active Replacement
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-[#7A4B5B] font-serif leading-relaxed">
+                If provided, this image will replace the entire text box with your custom designed invitation card with the exact same ratio, rounded border, and corner motifs.
+              </p>
+
+              <Input 
+                label="Subh Aagman Card Image URL" 
+                value={data.subhAagmanImageUrl || ""} 
+                onChange={(v) => handleChange("subhAagmanImageUrl", v)} 
+                placeholder="https://..."
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-4 py-2 rounded-xl hover:bg-[#9E0E15] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                  <ImageIcon className="w-4 h-4 text-[#FFBF00]" />
+                  Upload Subh Aagman Card File
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleSingleFileUpload(e, "subhAagmanImageUrl")} 
+                    className="hidden" 
+                  />
+                </label>
+
+                {data.subhAagmanImageUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => handleChange("subhAagmanImageUrl", "")}
+                    className="text-xs text-red-600 hover:text-red-800 bg-white border border-red-200 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Revert to Text Box
+                  </button>
+                )}
+              </div>
+
+              {/* Live Preview of Replaced Card */}
+              {data.subhAagmanImageUrl && (
+                <div className="mt-3 p-3 bg-[#FAF2F5] rounded-xl border border-[#D4AF37]/50 max-w-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
+                    Card Preview (Same Ratio & Border):
+                  </span>
+                  <div className="w-48 rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-sm mx-auto bg-white">
+                    <img 
+                      src={data.subhAagmanImageUrl} 
+                      alt="Subh Aagman Card Preview" 
+                      className="w-full h-auto object-cover" 
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -718,7 +787,7 @@ export function AdminPanel() {
           {/* SECTION: EVENT DATE & TIME */}
           <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
             <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span>📅</span> Section 1 & 6: Event Date & Countdown
+              <span>📅</span> Section 1: Event Date & Countdown
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input 
@@ -742,6 +811,81 @@ export function AdminPanel() {
                 value={data.weddingDayFormatted} 
                 onChange={(v) => handleChange("weddingDayFormatted", v)} 
               />
+            </div>
+          </section>
+
+          {/* SECTION 6: MATA KI CHOWKI EVENT CARD & IMAGE REPLACEMENT */}
+          <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span>🪔</span> Section 6: Mata Ki Chowki Event Card
+            </h2>
+            <p className="text-xs text-[#7A4B5B] font-serif mb-4">
+              Manage the Mata Ki Chowki event card details, or optionally <strong>replace the full content box with a single card image</strong> in the exact same rounded golden-bordered frame.
+            </p>
+
+            {/* Image Replacement Box for Mata Ki Chowki */}
+            <div className="p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B8141B] flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-[#E65100]" />
+                  Replace Full Content Box with Single Image (Mata Ki Chowki)
+                </span>
+                {data.mataKiChowkiImageUrl && (
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+                    Active Replacement
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-[#7A4B5B] font-serif leading-relaxed">
+                If provided, this image will replace the entire Mata Ki Chowki card with your custom designed image with the exact same ratio, rounded border, and corner motifs.
+              </p>
+
+              <Input 
+                label="Mata Ki Chowki Card Image URL" 
+                value={data.mataKiChowkiImageUrl || ""} 
+                onChange={(v) => handleChange("mataKiChowkiImageUrl", v)} 
+                placeholder="https://..."
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-4 py-2 rounded-xl hover:bg-[#9E0E15] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                  <ImageIcon className="w-4 h-4 text-[#FFBF00]" />
+                  Upload Mata Ki Chowki Card File
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleSingleFileUpload(e, "mataKiChowkiImageUrl")} 
+                    className="hidden" 
+                  />
+                </label>
+
+                {data.mataKiChowkiImageUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => handleChange("mataKiChowkiImageUrl", "")}
+                    className="text-xs text-red-600 hover:text-red-800 bg-white border border-red-200 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Revert to Text Box
+                  </button>
+                )}
+              </div>
+
+              {/* Live Preview */}
+              {data.mataKiChowkiImageUrl && (
+                <div className="mt-3 p-3 bg-[#FAF2F5] rounded-xl border border-[#D4AF37]/50 max-w-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
+                    Card Preview (Same Ratio & Border):
+                  </span>
+                  <div className="w-48 rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-sm mx-auto bg-white">
+                    <img 
+                      src={data.mataKiChowkiImageUrl} 
+                      alt="Mata Ki Chowki Card Preview" 
+                      className="w-full h-auto object-cover" 
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -825,20 +969,89 @@ export function AdminPanel() {
 
           {/* SECTION: TEXT & MESSAGES */}
           <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border border-[#F3C3D2]">
-            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span>✍️</span> Messages & Blessings
+            <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span>✍️</span> Section 10: With Faith, Devotion & Togetherness
             </h2>
-            <div className="space-y-4">
+            <p className="text-xs text-[#7A4B5B] font-serif mb-4">
+              Customize text messages, or optionally <strong>replace the full "With Faith, Devotion & Togetherness" closing content box with a single card image</strong> in the exact same rounded golden-bordered frame.
+            </p>
+
+            <div className="space-y-4 mb-5">
               <TextArea 
-                label="Invitation Message" 
+                label="Invitation Message (Section 4)" 
                 value={data.invitationMessage || ""} 
                 onChange={(v) => handleChange("invitationMessage", v)} 
               />
               <TextArea 
-                label="Closing Message" 
+                label="Closing Message Text" 
                 value={data.closingMessage || ""} 
                 onChange={(v) => handleChange("closingMessage", v)} 
               />
+            </div>
+
+            {/* Image Replacement Box for With Faith, Devotion & Togetherness */}
+            <div className="p-4 bg-[#FFFDF7] rounded-xl border border-[#D4AF37]/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#B8141B] flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-[#E65100]" />
+                  Replace Full Content Box with Single Image (With Faith, Devotion & Togetherness)
+                </span>
+                {data.faithDevotionImageUrl && (
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+                    Active Replacement
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-[#7A4B5B] font-serif leading-relaxed">
+                If provided, this image will replace the entire "With Faith, Devotion & Togetherness" card with your custom designed image with the exact same ratio, rounded border, and corner motifs.
+              </p>
+
+              <Input 
+                label="Card Image URL" 
+                value={data.faithDevotionImageUrl || ""} 
+                onChange={(v) => handleChange("faithDevotionImageUrl", v)} 
+                placeholder="https://..."
+              />
+
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 bg-[#B8141B] text-[#FFFDF7] px-4 py-2 rounded-xl hover:bg-[#9E0E15] transition-colors cursor-pointer text-xs uppercase font-bold shadow-sm">
+                  <ImageIcon className="w-4 h-4 text-[#FFBF00]" />
+                  Upload Card Image File
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleSingleFileUpload(e, "faithDevotionImageUrl")} 
+                    className="hidden" 
+                  />
+                </label>
+
+                {data.faithDevotionImageUrl && (
+                  <button 
+                    type="button"
+                    onClick={() => handleChange("faithDevotionImageUrl", "")}
+                    className="text-xs text-red-600 hover:text-red-800 bg-white border border-red-200 px-3 py-2 rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Revert to Text Box
+                  </button>
+                )}
+              </div>
+
+              {/* Live Preview */}
+              {data.faithDevotionImageUrl && (
+                <div className="mt-3 p-3 bg-[#FAF2F5] rounded-xl border border-[#D4AF37]/50 max-w-xs">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4B5B] block mb-2">
+                    Card Preview (Same Ratio & Border):
+                  </span>
+                  <div className="w-48 rounded-2xl overflow-hidden border-2 border-[#D4AF37] shadow-sm mx-auto bg-white">
+                    <img 
+                      src={data.faithDevotionImageUrl} 
+                      alt="Faith Devotion Card Preview" 
+                      className="w-full h-auto object-cover" 
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 

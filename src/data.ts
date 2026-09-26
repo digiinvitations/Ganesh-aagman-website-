@@ -27,6 +27,9 @@ export const weddingData: WeddingData = {
   heroImageUrl: "",
   ogImageUrl: "",
   globalLogo: "",
+  subhAagmanImageUrl: "",
+  mataKiChowkiImageUrl: "",
+  faithDevotionImageUrl: "",
   
   heroMessage: "॥ जय माता दी ॥\nMATA KI CHOWKI\nKAROLI WALI MATA\n24 OCTOBER 2026\nSATURDAY • 8:00 PM ONWARDS",
   

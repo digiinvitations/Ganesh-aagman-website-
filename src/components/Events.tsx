@@ -1,14 +1,15 @@
 import { motion } from "motion/react";
 import { EventDetails } from "../types";
-import { Calendar, Clock, MapPin, Sparkles } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 
 interface EventsProps {
   events?: EventDetails[];
   globalLogo?: string;
+  mataKiChowkiImageUrl?: string;
 }
 
-export function Events({ events, globalLogo }: EventsProps) {
-  // Single event display as required
+export function Events({ events, globalLogo, mataKiChowkiImageUrl }: EventsProps) {
+  // Single event display
   const mainEvent = events && events.length > 0 ? events[0] : {
     title: "MATA KI CHOWKI",
     subtitle: "AN EVENING OF DIVINE BLESSINGS",
@@ -47,7 +48,7 @@ export function Events({ events, globalLogo }: EventsProps) {
         </div>
       </motion.div>
 
-      {/* Single Devotional Event Card */}
+      {/* Devotional Event Content Box */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 25 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
@@ -55,80 +56,104 @@ export function Events({ events, globalLogo }: EventsProps) {
         transition={{ duration: 0.9 }}
         className="w-full max-w-md mx-auto relative z-10"
       >
-        <div className="bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.14)] relative overflow-hidden flex flex-col items-center text-center">
-          
-          {/* Inner hairline border */}
-          <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />
+        {/* 
+          MATA KI CHOWKI CONTENT BOX:
+          If mataKiChowkiImageUrl is set from Admin, replace full content box with single image content
+          with the exact same ratio & royal golden framing as the created content box.
+        */}
+        {mataKiChowkiImageUrl ? (
+          <div className="w-full bg-[#FFFDF7] rounded-3xl border-2 border-[#D4AF37]/60 shadow-[0_12px_35px_rgba(212,175,55,0.15)] relative overflow-hidden group">
+            {/* Inner hairline border */}
+            <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/20 pointer-events-none z-10" />
 
-          {/* Corner traditional stars */}
-          <span className="absolute top-3 left-3 text-xs text-[#D4AF37]">✦</span>
-          <span className="absolute top-3 right-3 text-xs text-[#D4AF37]">✦</span>
-          <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37]">✦</span>
-          <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37]">✦</span>
+            {/* Corner traditional stars */}
+            <span className="absolute top-3 left-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
+            <span className="absolute top-3 right-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
+            <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
+            <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
 
-          {/* Optional Logo */}
-          {globalLogo && (
             <img 
-              src={globalLogo} 
-              alt="Logo" 
-              className="w-16 h-16 object-contain mb-4 drop-shadow-sm" 
+              src={mataKiChowkiImageUrl} 
+              alt="Mata Ki Chowki" 
+              className="w-full h-auto object-cover rounded-3xl block transition-transform duration-500 group-hover:scale-[1.01]" 
             />
-          )}
-
-          {/* Date Badge */}
-          <div className="bg-[#FAF2F5] border border-[#B8141B]/25 rounded-2xl px-6 py-3 mb-6 shadow-sm w-full max-w-xs flex flex-col items-center">
-            <span className="font-serif text-[10px] tracking-[0.25em] text-[#E65100] uppercase font-bold mb-1">
-              DATE & DAY
-            </span>
-            <span className="font-serif text-xl sm:text-2xl font-extrabold text-[#B8141B] tracking-wider">
-              24 OCTOBER 2026
-            </span>
-            <span className="font-serif text-sm font-bold text-[#7A4B5B] uppercase tracking-widest mt-0.5">
-              SATURDAY
-            </span>
           </div>
+        ) : (
+          <div className="bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.14)] relative overflow-hidden flex flex-col items-center text-center">
+            
+            {/* Inner hairline border */}
+            <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />
 
-          {/* Time Badge */}
-          <div className="flex items-center gap-2 mb-6 text-[#E65100]">
-            <Clock className="w-5 h-5 text-[#B8141B]" />
-            <span className="font-serif text-base sm:text-lg font-bold tracking-[0.12em] text-[#B8141B]">
-              8:00 PM ONWARDS
-            </span>
+            {/* Corner traditional stars */}
+            <span className="absolute top-3 left-3 text-xs text-[#D4AF37]">✦</span>
+            <span className="absolute top-3 right-3 text-xs text-[#D4AF37]">✦</span>
+            <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37]">✦</span>
+            <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37]">✦</span>
+
+            {/* Optional Logo */}
+            {globalLogo && (
+              <img 
+                src={globalLogo} 
+                alt="Logo" 
+                className="w-16 h-16 object-contain mb-4 drop-shadow-sm" 
+              />
+            )}
+
+            {/* Date Badge */}
+            <div className="bg-[#FAF2F5] border border-[#B8141B]/25 rounded-2xl px-6 py-3 mb-6 shadow-sm w-full max-w-xs flex flex-col items-center">
+              <span className="font-serif text-[10px] tracking-[0.25em] text-[#E65100] uppercase font-bold mb-1">
+                DATE & DAY
+              </span>
+              <span className="font-serif text-xl sm:text-2xl font-extrabold text-[#B8141B] tracking-wider">
+                {mainEvent.date || "24 OCTOBER 2026"}
+              </span>
+              <span className="font-serif text-sm font-bold text-[#7A4B5B] uppercase tracking-widest mt-0.5">
+                SATURDAY
+              </span>
+            </div>
+
+            {/* Time Badge */}
+            <div className="flex items-center gap-2 mb-6 text-[#E65100]">
+              <Clock className="w-5 h-5 text-[#B8141B]" />
+              <span className="font-serif text-base sm:text-lg font-bold tracking-[0.12em] text-[#B8141B]">
+                {mainEvent.time || "8:00 PM ONWARDS"}
+              </span>
+            </div>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
+
+            {/* Devi Dedication */}
+            <div className="flex flex-col items-center mb-6">
+              <span className="font-serif text-[10px] uppercase tracking-[0.25em] font-bold text-[#7A4B5B] mb-1">
+                IN HONOR OF
+              </span>
+              <h4 className="font-serif text-xl sm:text-2xl font-bold text-[#B8141B] tracking-widest">
+                KAROLI WALI MATA
+              </h4>
+            </div>
+
+            {/* Location Summary */}
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-[#7A4B5B] font-serif font-bold uppercase tracking-wider bg-[#FFF5F8] px-4 py-2 rounded-full border border-[#D4AF37]/30">
+              <MapPin className="w-4 h-4 text-[#B8141B]" />
+              <span>{mainEvent.location || "KRISHNA PALACE, AGRA"}</span>
+            </div>
+
+            {/* Devotional Description */}
+            <p className="font-serif text-xs sm:text-sm text-[#5E2B3C] italic mt-6 leading-relaxed px-2">
+              “{mainEvent.description || "Join our family for an auspicious evening of devotional bhajans, sacred aarti, and the divine grace of Karoli Wali Mata."}”
+            </p>
+
+            {/* Bottom Traditional Floral Ribbon */}
+            <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-[#D4AF37]/30 w-full">
+              <span className="text-xs">🌼</span>
+              <span className="font-serif text-[11px] font-bold text-[#B8141B] tracking-[0.2em] uppercase">
+                ॥ जय माता दी ॥
+              </span>
+              <span className="text-xs">🌼</span>
+            </div>
+
           </div>
-
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
-
-          {/* Devi Dedication */}
-          <div className="flex flex-col items-center mb-6">
-            <span className="font-serif text-[10px] uppercase tracking-[0.25em] font-bold text-[#7A4B5B] mb-1">
-              IN HONOR OF
-            </span>
-            <h4 className="font-serif text-xl sm:text-2xl font-bold text-[#B8141B] tracking-widest">
-              KAROLI WALI MATA
-            </h4>
-          </div>
-
-          {/* Location Summary */}
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-[#7A4B5B] font-serif font-bold uppercase tracking-wider bg-[#FFF5F8] px-4 py-2 rounded-full border border-[#D4AF37]/30">
-            <MapPin className="w-4 h-4 text-[#B8141B]" />
-            <span>KRISHNA PALACE, AGRA</span>
-          </div>
-
-          {/* Devotional Description */}
-          <p className="font-serif text-xs sm:text-sm text-[#5E2B3C] italic mt-6 leading-relaxed px-2">
-            “Join our family for an auspicious evening of devotional bhajans, sacred aarti, and the divine grace of Karoli Wali Mata.”
-          </p>
-
-          {/* Bottom Traditional Floral Ribbon */}
-          <div className="flex items-center justify-center gap-3 mt-6 pt-4 border-t border-[#D4AF37]/30 w-full">
-            <span className="text-xs">🌼</span>
-            <span className="font-serif text-[11px] font-bold text-[#B8141B] tracking-[0.2em] uppercase">
-              ॥ जय माता दी ॥
-            </span>
-            <span className="text-xs">🌼</span>
-          </div>
-
-        </div>
+        )}
       </motion.div>
     </section>
   );

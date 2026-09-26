@@ -10,6 +10,7 @@ interface ClosingMessageProps {
 export function ClosingMessage({ data }: ClosingMessageProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.4 });
+  const customCardImage = data?.faithDevotionImageUrl;
 
   useEffect(() => {
     if (isInView) {
@@ -62,61 +63,91 @@ export function ClosingMessage({ data }: ClosingMessageProps) {
         transition={{ duration: 0.9 }}
         className="max-w-md mx-auto flex flex-col items-center relative z-10 w-full"
       >
-        <div className="w-full bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.12)] relative flex flex-col items-center">
-          
-          {/* Inner hairline border */}
-          <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />
+        {/* 
+          WITH FAITH, DEVOTION & TOGETHERNESS CONTENT BOX:
+          If faithDevotionImageUrl is set from Admin, replace full content box with single image content
+          with the exact same ratio & royal golden framing as the created content box.
+        */}
+        {customCardImage ? (
+          <div className="w-full bg-[#FFFDF7] rounded-3xl border-2 border-[#D4AF37]/60 shadow-[0_12px_35px_rgba(212,175,55,0.15)] relative overflow-hidden group">
+            {/* Inner hairline border */}
+            <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/20 pointer-events-none z-10" />
 
-          {/* Subtitle */}
-          <p className="font-serif font-bold text-xs sm:text-sm uppercase tracking-[0.25em] text-[#E65100] mb-3">
-            WITH FAITH, DEVOTION & TOGETHERNESS
-          </p>
+            {/* Corner traditional stars */}
+            <span className="absolute top-3 left-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
+            <span className="absolute top-3 right-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
+            <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
+            <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37] z-10 drop-shadow-sm pointer-events-none">✦</span>
 
-          {/* Devotional Salutation */}
-          <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#B8141B] tracking-[0.16em] mb-3 drop-shadow-sm">
-            ॥ जय माता दी ॥
-          </h3>
-
-          {/* Event Title */}
-          <h2 className="font-serif font-extrabold text-3xl sm:text-4xl text-[#B8141B] tracking-wider mb-2">
-            MATA KI CHOWKI
-          </h2>
-
-          {/* Event Date */}
-          <p className="font-serif text-sm sm:text-base font-bold text-[#E65100] tracking-[0.2em] uppercase mb-6">
-            24 OCTOBER 2026
-          </p>
-
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
-
-          {/* Closing Heartfelt Message */}
-          <div className="flex flex-col gap-3 font-serif text-[#3C1B26] text-sm sm:text-base leading-relaxed px-2 mb-6">
-            <p>
-              Your presence and blessings will make this auspicious evening even more special.
-            </p>
-            <p className="text-[#5E2B3C] italic">
-              We look forward to welcoming you with folded hands and heartfelt devotion.
-            </p>
+            <img 
+              src={customCardImage} 
+              alt="With Faith, Devotion & Togetherness" 
+              className="w-full h-auto object-cover rounded-3xl block transition-transform duration-500 group-hover:scale-[1.01]" 
+            />
           </div>
+        ) : (
+          <div className="w-full bg-[#FFFDF7] rounded-3xl p-7 sm:p-9 border-2 border-[#D4AF37]/50 shadow-[0_12px_35px_rgba(212,175,55,0.12)] relative flex flex-col items-center">
+            
+            {/* Inner hairline border */}
+            <div className="absolute inset-2.5 rounded-2xl border border-[#B8141B]/15 pointer-events-none" />
 
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
+            {/* Corner traditional stars */}
+            <span className="absolute top-3 left-3 text-xs text-[#D4AF37]">✦</span>
+            <span className="absolute top-3 right-3 text-xs text-[#D4AF37]">✦</span>
+            <span className="absolute bottom-3 left-3 text-xs text-[#D4AF37]">✦</span>
+            <span className="absolute bottom-3 right-3 text-xs text-[#D4AF37]">✦</span>
 
-          {/* With Love & Blessings Goyal Family */}
-          <p className="font-serif text-[11px] sm:text-xs uppercase tracking-[0.25em] font-bold text-[#7A4B5B] mb-1">
-            WITH LOVE & BLESSINGS
-          </p>
-          <h4 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#B8141B] tracking-[0.12em] mb-4">
-            GOYAL FAMILY
-          </h4>
+            {/* Subtitle */}
+            <p className="font-serif font-bold text-xs sm:text-sm uppercase tracking-[0.25em] text-[#E65100] mb-3">
+              WITH FAITH, DEVOTION & TOGETHERNESS
+            </p>
 
-          {/* Final Line */}
-          <div className="inline-block px-6 py-2 rounded-full bg-[#FAF2F5] border border-[#B8141B]/30 shadow-inner mt-2">
-            <span className="font-serif text-base sm:text-lg font-bold text-[#B8141B] tracking-[0.2em]">
+            {/* Devotional Salutation */}
+            <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#B8141B] tracking-[0.16em] mb-3 drop-shadow-sm">
               ॥ जय माता दी ॥
-            </span>
-          </div>
+            </h3>
 
-        </div>
+            {/* Event Title */}
+            <h2 className="font-serif font-extrabold text-3xl sm:text-4xl text-[#B8141B] tracking-wider mb-2">
+              MATA KI CHOWKI
+            </h2>
+
+            {/* Event Date */}
+            <p className="font-serif text-sm sm:text-base font-bold text-[#E65100] tracking-[0.2em] uppercase mb-6">
+              24 OCTOBER 2026
+            </p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
+
+            {/* Closing Heartfelt Message */}
+            <div className="flex flex-col gap-3 font-serif text-[#3C1B26] text-sm sm:text-base leading-relaxed px-2 mb-6">
+              <p>
+                Your presence and blessings will make this auspicious evening even more special.
+              </p>
+              <p className="text-[#5E2B3C] italic">
+                We look forward to welcoming you with folded hands and heartfelt devotion.
+              </p>
+            </div>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-6" />
+
+            {/* With Love & Blessings Goyal Family */}
+            <p className="font-serif text-[11px] sm:text-xs uppercase tracking-[0.25em] font-bold text-[#7A4B5B] mb-1">
+              WITH LOVE & BLESSINGS
+            </p>
+            <h4 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#B8141B] tracking-[0.12em] mb-4">
+              GOYAL FAMILY
+            </h4>
+
+            {/* Final Line */}
+            <div className="inline-block px-6 py-2 rounded-full bg-[#FAF2F5] border border-[#B8141B]/30 shadow-inner mt-2">
+              <span className="font-serif text-base sm:text-lg font-bold text-[#B8141B] tracking-[0.2em]">
+                ॥ जय माता दी ॥
+              </span>
+            </div>
+
+          </div>
+        )}
       </motion.div>
     </section>
   );

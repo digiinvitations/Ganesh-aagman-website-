@@ -19,7 +19,7 @@ export function Venue({ venue }: VenueProps) {
   const calendarDates = "20261024T143000Z/20261024T193000Z";
   const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${calendarDates}&location=${eventLocation}&details=${eventDetails}`;
 
-  const mapUrl = venue?.mapUrl || "https://www.google.com/maps/search/?api=1&query=Krishna+Palace+Sikandra+Bodla+Road+Agra";
+  const mapUrl = venue?.mapUrl || "https://www.google.com/maps/search/?api=1&query=Krishna+Palace+Sikandra+Bodla Road+Agra";
 
   return (
     <section className="py-24 px-4 sm:px-6 bg-[#FDF0F4] flex flex-col items-center overflow-hidden border-t border-[#F3C3D2]/50">

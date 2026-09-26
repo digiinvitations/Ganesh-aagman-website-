@@ -113,7 +113,6 @@ export function DeviShrine({ data }: DeviShrineProps) {
           <p className="font-serif text-sm sm:text-base text-[#3C1B26] italic leading-relaxed px-4">
             “May Maa Karoli bless our family with her divine grace, strength, happiness and prosperity.”
           </p>
-
         </div>
       </motion.div>
     </section>

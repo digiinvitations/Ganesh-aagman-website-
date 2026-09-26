@@ -88,67 +88,67 @@ export function LightDiya() {
             </AnimatePresence>
 
             {/* Traditional Brass Diya Base */}
-            <motion.div
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.94 }}
-              className={`text-6xl sm:text-7xl transition-all duration-300 relative z-10 ${
-                isLit 
-                  ? 'drop-shadow-[0_12px_25px_rgba(212,175,55,0.6)] brightness-110' 
-                  : 'drop-shadow-md opacity-85'
-              }`}
-            >
-              🪔
-            </motion.div>
+            <div className="relative flex flex-col items-center">
+              <svg 
+                viewBox="0 0 100 60" 
+                className="w-24 h-16 filter drop-shadow-[0_4px_12px_rgba(212,175,55,0.4)] transition-transform duration-300 group-hover:scale-105"
+              >
+                {/* Diya Oil Well Bowl */}
+                <path 
+                  d="M10 25 Q50 60 90 25 Q95 20 85 20 Q50 35 15 20 Q5 20 10 25Z" 
+                  fill="url(#brassGradient)" 
+                  stroke="#B8860B" 
+                  strokeWidth="1.5"
+                />
+                {/* Diya Lip / Rim */}
+                <ellipse 
+                  cx="50" 
+                  cy="20" 
+                  rx="38" 
+                  ry="6" 
+                  fill="#E5A912" 
+                  stroke="#D4AF37" 
+                  strokeWidth="1"
+                />
+                {/* Diya Wick Peak */}
+                <path 
+                  d="M48 20 Q50 14 52 20 Z" 
+                  fill="#8B4513" 
+                />
+                {/* Diya Stem Base */}
+                <path 
+                  d="M44 42 L38 55 Q50 58 62 55 L56 42 Z" 
+                  fill="url(#brassGradient)" 
+                  stroke="#B8860B" 
+                  strokeWidth="1"
+                />
+                
+                <defs>
+                  <linearGradient id="brassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#FFE082" />
+                    <stop offset="50%" stopColor="#D4AF37" />
+                    <stop offset="100%" stopColor="#996515" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
           </button>
         </div>
 
-        {/* Status Text / Jai Mata Di */}
-        <div className="h-10 mt-4 flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            {isLit ? (
-              <motion.div
-                key="lit"
-                initial={{ opacity: 0, scale: 0.85, y: 5 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="flex flex-col items-center gap-1"
-              >
-                <p className="font-serif text-[#B8141B] text-xl sm:text-2xl tracking-[0.18em] font-extrabold drop-shadow-sm">
-                  ॥ जय माता दी ॥
-                </p>
-                <p className="text-[10px] uppercase tracking-widest text-[#E65100] font-bold">
-                  May Maa Bless You & Your Family
-                </p>
-              </motion.div>
-            ) : hasLitOnce ? (
-              <motion.p
-                key="unlit"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="font-serif text-[#7A4B5B] text-xs uppercase tracking-widest font-semibold cursor-pointer"
-                onClick={handleToggle}
-              >
-                Tap the diya to relight
-              </motion.p>
-            ) : (
-              <motion.div
-                key="initial"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="px-5 py-1.5 rounded-full bg-[#FFFDF7] border border-[#D4AF37]/50 shadow-sm flex items-center gap-2 animate-pulse cursor-pointer"
-                onClick={handleToggle}
-              >
-                <span className="text-xs">✨</span>
-                <span className="font-serif text-[#B8141B] text-xs tracking-[0.2em] uppercase font-bold">
-                  TAP TO LIGHT
-                </span>
-                <span className="text-xs">✨</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Status Call to Action */}
+        <p className="font-serif text-xs font-bold tracking-[0.2em] uppercase mt-2 text-[#E65100]">
+          {isLit ? "॥ शुभ ज्योति प्रज्वलित ॥" : "TAP THE DIYA TO LIGHT"}
+        </p>
+
+        {hasLitOnce && (
+          <motion.p 
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs font-serif text-[#7A4B5B] italic mt-3"
+          >
+            May Maa Karoli illuminate your life with infinite bliss and peace.
+          </motion.p>
+        )}
       </motion.div>
     </section>
   );

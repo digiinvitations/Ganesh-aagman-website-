@@ -28,7 +28,7 @@ function PublicView() {
 
   const [data, setData] = useState<WeddingData | null>(null);
   const [isPreloading, setIsPreloading] = useState(true);
-  const [viewState, setViewState] = useState<'thumbnail' | 'opening-video' | 'main'>('thumbnail');
+  const [viewState, setViewState] = useState<'thumbnail' | 'opening-video' | 'transition' | 'main'>('thumbnail');
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isHeroEnded, setIsHeroEnded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -38,8 +38,10 @@ function PublicView() {
     async function loadData() {
       const dbData = await getWeddingData(templateId);
       setData(dbData);
-      if (!dbData.openingThumbnailUrl) {
+      if (!dbData.openingThumbnailUrl && !dbData.openingVideoUrl) {
         setViewState('main');
+      } else if (!dbData.openingThumbnailUrl && dbData.openingVideoUrl) {
+        setViewState('opening-video');
       }
     }
     loadData();
@@ -47,11 +49,12 @@ function PublicView() {
 
   const handleTransitionEnd = () => {
     setIsTransitioning(false);
+    setViewState('main');
   };
 
   const handleVideoEnd = () => {
     setIsTransitioning(true);
-    setViewState('main');
+    setViewState('transition');
   };
 
   const handleThumbnailClick = () => {
@@ -63,6 +66,7 @@ function PublicView() {
     if (data?.openingVideoUrl) {
       setViewState('opening-video');
       if (openingVideoRef.current) {
+        openingVideoRef.current.currentTime = 0;
         openingVideoRef.current.play().catch((err) => {
           console.error("Video playback failed", err);
           handleVideoEnd();
@@ -70,7 +74,7 @@ function PublicView() {
       }
     } else {
       setIsTransitioning(true);
-      setViewState('main');
+      setViewState('transition');
     }
   };
 
@@ -135,19 +139,27 @@ function PublicView() {
       {/* Global Environment Animations (Auspicious Marigold Blossoms & Sparkles) */}
       {viewState === 'main' && <EnvironmentEffects />}
 
-      {/* Main Content Sections */}
-      <main className="w-full min-h-[100svh] bg-[#FDF0F4] relative overflow-hidden">
+      {/* Main Content Sections - strictly invisible until transition finishes */}
+      <main className={`w-full min-h-[100svh] bg-[#FDF0F4] relative overflow-hidden transition-opacity duration-700 ${viewState === 'main' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         
         {/* HERO SECTION */}
         <Hero 
           data={data} 
-          shouldPlayVideo={viewState === 'main' || !data.openingVideoUrl} 
+          shouldPlayVideo={viewState === 'main'} 
           onVideoEnd={() => setIsHeroEnded(true)} 
         />
         
         <ParallaxDivider />
         {/* SECTION 1 — COUNTDOWN */}
-        <Reveal delay={0.1}><Countdown targetDate={data.weddingDate} /></Reveal>
+        <Reveal delay={0.1}>
+          <Countdown 
+            targetDate={data.weddingDate} 
+            dateFormatted={data.weddingDateFormatted}
+            dayFormatted={data.weddingDayFormatted}
+            timeFormatted={data.weddingTimeFormatted}
+            venueName={data.venue?.name}
+          />
+        </Reveal>
         
         <ParallaxDivider />
         {/* SECTION 2 — FAMILY INVITATION */}
@@ -166,7 +178,7 @@ function PublicView() {
         
         <ParallaxDivider />
         {/* SECTION 6 — EVENT DETAILS */}
-        <Reveal delay={0.1}><Events events={data.events} globalLogo={data.globalLogo} /></Reveal>
+        <Reveal delay={0.1}><Events events={data.events} globalLogo={data.globalLogo} mataKiChowkiImageUrl={data.mataKiChowkiImageUrl} /></Reveal>
         
         <ParallaxDivider />
         {/* SECTION 7 — VENUE */}

@@ -90,6 +90,9 @@ export interface WeddingData {
   heroImageUrl?: string;
   ogImageUrl?: string;
   globalLogo?: string;
+  subhAagmanImageUrl?: string;
+  mataKiChowkiImageUrl?: string;
+  faithDevotionImageUrl?: string;
   heroMessage: string;
   invitationMessage: string;
   events: EventDetails[];
