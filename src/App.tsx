@@ -24,6 +24,22 @@ import { ParallaxDivider } from './components/ParallaxDivider';
 import { OpeningTransition } from './components/OpeningTransition';
 import { ScrollPrompt } from './components/ScrollPrompt';
 import { FullScreenScrollFlash } from './components/FullScreenScrollFlash';
+import { FloatingScrollIndicator } from './components/FloatingScrollIndicator';
+
+const SECTION_IDS = [
+  'scratch-card-section',
+  'section-hero',
+  'section-venue',
+  'section-devi',
+  'section-message',
+  'section-family',
+  'section-events',
+  'section-diya',
+  'section-rsvp',
+  'section-contact',
+  'section-closing',
+  'section-footer',
+];
 
 function PublicView() {
   const [searchParams] = useSearchParams();
@@ -48,99 +64,120 @@ function PublicView() {
 
   const openingVideoRef = React.useRef<HTMLVideoElement>(null);
 
-  // Auto-scroll upward animation logic if user hasn't scrolled yet
-  const hasUserScrolledRef = React.useRef(false);
-  const autoScrollTriggeredRef = React.useRef(false);
+  // Self-scrolling system state & refs
+  const isAutoScrollingRef = React.useRef(false);
+  const autoScrollTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isSelfScrollingActiveRef = React.useRef(false);
+  const hasUserManuallyScrolledRef = React.useRef(false);
 
+  // Stop self-scrolling immediately
+  const stopSelfScrolling = React.useCallback(() => {
+    if (autoScrollTimerRef.current) {
+      clearTimeout(autoScrollTimerRef.current);
+      autoScrollTimerRef.current = null;
+    }
+    isSelfScrollingActiveRef.current = false;
+  }, []);
+
+  // Smoothly scroll down to the next section in the list
+  const scrollToNextSection = React.useCallback(() => {
+    const currentScroll = window.scrollY;
+    let nextTargetId: string | null = null;
+
+    for (let i = 0; i < SECTION_IDS.length; i++) {
+      const el = document.getElementById(SECTION_IDS[i]);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        // Find the first section that begins distinctly below the current viewport top (margin of 75px)
+        if (top > currentScroll + 75) {
+          nextTargetId = SECTION_IDS[i];
+          break;
+        }
+      }
+    }
+
+    if (nextTargetId) {
+      const targetEl = document.getElementById(nextTargetId);
+      if (targetEl) {
+        isAutoScrollingRef.current = true;
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        setTimeout(() => {
+          isAutoScrollingRef.current = false;
+        }, 1100);
+
+        const isLast = nextTargetId === SECTION_IDS[SECTION_IDS.length - 1];
+        return !isLast;
+      }
+    }
+    return false;
+  }, []);
+
+  // Start self-scrolling section wise every 3-4 seconds
+  const startSelfScrolling = React.useCallback(() => {
+    stopSelfScrolling();
+    if (hasUserManuallyScrolledRef.current) return;
+
+    isSelfScrollingActiveRef.current = true;
+
+    // After scratching, give 2.2s for celebration chime, confetti & viewing the countdown,
+    // then smoothly scroll full section after every 3.5 seconds (within 3-4s range)
+    const scheduleNext = (delayMs: number) => {
+      autoScrollTimerRef.current = setTimeout(() => {
+        if (!isSelfScrollingActiveRef.current || hasUserManuallyScrolledRef.current) {
+          stopSelfScrolling();
+          return;
+        }
+
+        const hasMore = scrollToNextSection();
+        if (hasMore && isSelfScrollingActiveRef.current && !hasUserManuallyScrolledRef.current) {
+          scheduleNext(3500); // Full section scroll after every 3.5 seconds
+        } else {
+          stopSelfScrolling();
+        }
+      }, delayMs);
+    };
+
+    scheduleNext(2200);
+  }, [scrollToNextSection, stopSelfScrolling]);
+
+  // Cancel self-scrolling as soon as user manually starts scrolling or touches screen
   useEffect(() => {
-    const handleUserScroll = () => {
-      if (window.scrollY > 25) {
-        hasUserScrolledRef.current = true;
-        setShowScrollFlash(false);
+    const handleManualInterruption = () => {
+      if (isSelfScrollingActiveRef.current) {
+        hasUserManuallyScrolledRef.current = true;
+        stopSelfScrolling();
       }
     };
-    window.addEventListener('scroll', handleUserScroll, { passive: true });
-    window.addEventListener('wheel', handleUserScroll, { passive: true });
-    window.addEventListener('touchmove', handleUserScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleUserScroll);
-      window.removeEventListener('wheel', handleUserScroll);
-      window.removeEventListener('touchmove', handleUserScroll);
+
+    const handleWindowScroll = () => {
+      if (!isAutoScrollingRef.current && isSelfScrollingActiveRef.current) {
+        hasUserManuallyScrolledRef.current = true;
+        stopSelfScrolling();
+      }
     };
-  }, []);
 
-  // Trigger 2-3 times upward-initial position scroll animation after card is revealed
-  const triggerUpwardBounceSequence = React.useCallback(() => {
-    if (hasUserScrolledRef.current || window.scrollY > 20) return;
-    autoScrollTriggeredRef.current = true;
-
-    // Bounce 1: Upward
-    window.scrollTo({ top: 135, behavior: 'smooth' });
-
-    // Bounce 1: Back to initial position
-    const t1 = setTimeout(() => {
-      if (hasUserScrolledRef.current) return;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 850);
-
-    // Bounce 2: Upward
-    const t2 = setTimeout(() => {
-      if (hasUserScrolledRef.current) return;
-      window.scrollTo({ top: 145, behavior: 'smooth' });
-    }, 1650);
-
-    // Bounce 2: Back to initial position
-    const t3 = setTimeout(() => {
-      if (hasUserScrolledRef.current) return;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2500);
-
-    // Bounce 3: Upward
-    const t4 = setTimeout(() => {
-      if (hasUserScrolledRef.current) return;
-      window.scrollTo({ top: 135, behavior: 'smooth' });
-    }, 3300);
-
-    // Bounce 3: Back to initial position
-    const t5 = setTimeout(() => {
-      if (hasUserScrolledRef.current) return;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 4150);
+    window.addEventListener('wheel', handleManualInterruption, { passive: true });
+    window.addEventListener('touchstart', handleManualInterruption, { passive: true });
+    window.addEventListener('touchmove', handleManualInterruption, { passive: true });
+    window.addEventListener('pointerdown', handleManualInterruption, { passive: true });
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Space', 'Home', 'End'].includes(e.code)) {
+        handleManualInterruption();
+      }
+    });
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
+      window.removeEventListener('wheel', handleManualInterruption);
+      window.removeEventListener('touchstart', handleManualInterruption);
+      window.removeEventListener('touchmove', handleManualInterruption);
+      window.removeEventListener('pointerdown', handleManualInterruption);
+      window.removeEventListener('keydown', handleManualInterruption as any);
+      window.removeEventListener('scroll', handleWindowScroll);
+      stopSelfScrolling();
     };
-  }, []);
-
-  // Make the hero section move upward-initial 2-3 times after card is revealed and user stays at top
-  useEffect(() => {
-    if (viewState === 'main' && isInvitationRevealed) {
-      const timer = setTimeout(() => {
-        triggerUpwardBounceSequence();
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [viewState, isInvitationRevealed, triggerUpwardBounceSequence]);
-
-  // Full screen instant flash animation for 1 sec if someone has not scrolled after invitation is revealed
-  useEffect(() => {
-    if (viewState === 'main' && isInvitationRevealed) {
-      const flashTimer = setTimeout(() => {
-        if (!hasUserScrolledRef.current && window.scrollY < 20) {
-          setShowScrollFlash(true);
-          const endTimer = setTimeout(() => {
-            setShowScrollFlash(false);
-          }, 1000);
-          return () => clearTimeout(endTimer);
-        }
-      }, 10000);
-      return () => clearTimeout(flashTimer);
-    }
-  }, [viewState, isInvitationRevealed]);
+  }, [stopSelfScrolling]);
 
   useEffect(() => {
     async function loadData() {
@@ -171,33 +208,18 @@ function PublicView() {
 
   const handleCardScratched = () => {
     setIsInvitationRevealed(true);
+    hasUserManuallyScrolledRef.current = false;
     try {
       sessionStorage.setItem('invitation_card_scratched', 'true');
     } catch {}
 
-    // Gentle scroll hint to indicate unlocked sections below
-    setTimeout(() => {
-      if (!hasUserScrolledRef.current && window.scrollY < 30) {
-        window.scrollBy({
-          top: 130,
-          behavior: 'smooth'
-        });
-      }
-    }, 1600);
+    // Automatically starts scrolling itself section wise until someone manually start scrolling!
+    startSelfScrolling();
   };
 
   const handleScrollDownClick = () => {
-    hasUserScrolledRef.current = true;
     setShowScrollFlash(false);
-    const heroElem = document.getElementById('hero-section');
-    if (heroElem) {
-      heroElem.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({
-        top: window.innerHeight * 0.92,
-        behavior: 'smooth'
-      });
-    }
+    scrollToNextSection();
   };
 
   const handleThumbnailClick = () => {
@@ -316,7 +338,7 @@ function PublicView() {
             {/* ========================================================
                 2. HERO SECTION
             ======================================================== */}
-            <div className="w-full">
+            <div id="section-hero" className="w-full">
               <Hero 
                 data={data} 
                 shouldPlayVideo={viewState === 'main'} 
@@ -329,7 +351,7 @@ function PublicView() {
             {/* ========================================================
                 3. VENUE SECTION
             ======================================================== */}
-            <div className="w-full">
+            <div id="section-venue" className="w-full">
               <Reveal delay={0.1}>
                 <Venue 
                   venue={data.venue} 
@@ -345,7 +367,7 @@ function PublicView() {
             {/* ========================================================
                 4. KAROLI WALI MATA WITH IMAGE SECTION
             ======================================================== */}
-            <div className="w-full">
+            <div id="section-devi" className="w-full">
               <Reveal delay={0.1}>
                 <DeviShrine data={data} />
               </Reveal>
@@ -356,7 +378,7 @@ function PublicView() {
             {/* ========================================================
                 5. जय माता दी MESSAGE SECTION
             ======================================================== */}
-            <div className="w-full">
+            <div id="section-message" className="w-full">
               <Reveal delay={0.1}>
                 <InvitationMessage 
                   message={data.invitationMessage} 
@@ -377,7 +399,7 @@ function PublicView() {
                 11. Closing Message
                 12. Footer
             ======================================================== */}
-            <div className="w-full">
+            <div id="section-family" className="w-full">
               <Reveal delay={0.1}>
                 <FamilyInvitation data={data} />
               </Reveal>
@@ -385,7 +407,7 @@ function PublicView() {
 
             <ParallaxDivider />
 
-            <div className="w-full">
+            <div id="section-events" className="w-full">
               <Reveal delay={0.1}>
                 <Events 
                   events={data.events} 
@@ -397,7 +419,7 @@ function PublicView() {
 
             <ParallaxDivider />
 
-            <div className="w-full">
+            <div id="section-diya" className="w-full">
               <Reveal delay={0.1}>
                 <LightDiya />
               </Reveal>
@@ -405,7 +427,7 @@ function PublicView() {
 
             <ParallaxDivider />
 
-            <div className="w-full">
+            <div id="section-rsvp" className="w-full">
               <Reveal delay={0.1}>
                 <RSVP />
               </Reveal>
@@ -413,7 +435,7 @@ function PublicView() {
 
             <ParallaxDivider />
 
-            <div className="w-full">
+            <div id="section-contact" className="w-full">
               <Reveal delay={0.1}>
                 <Contact data={data} />
               </Reveal>
@@ -421,13 +443,13 @@ function PublicView() {
 
             <ParallaxDivider />
 
-            <div className="w-full">
+            <div id="section-closing" className="w-full">
               <Reveal delay={0.1}>
                 <ClosingMessage data={data} />
               </Reveal>
             </div>
 
-            <div className="w-full">
+            <div id="section-footer" className="w-full">
               <Reveal delay={0.1}>
                 <Footer data={data} />
               </Reveal>
@@ -435,6 +457,12 @@ function PublicView() {
           </motion.div>
         )}
       </main>
+
+      {/* Floating Scroll Down Indicator with animated bigger down arrow */}
+      <FloatingScrollIndicator 
+        onScrollNext={scrollToNextSection} 
+        visible={viewState === 'main' && isInvitationRevealed} 
+      />
 
       {/* Opening Video Overlay */}
       {data.openingVideoUrl && (

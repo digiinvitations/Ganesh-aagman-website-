@@ -143,35 +143,34 @@ export function ScrollPrompt({ onClick }: ScrollPromptProps) {
           <MarigoldBlossom className="w-full h-full" />
         </motion.div>
 
-        {/* Scroll Button */}
+        {/* Scroll Button: free, unboxed, transparent, slightly small */}
         <button
           type="button"
           onClick={onClick}
-          aria-label="Scroll down to explore invitation"
-          className="group relative z-10 inline-flex items-center gap-3 px-6 py-2.5 sm:px-7 sm:py-3 rounded-full bg-[#FFFDF7]/95 hover:bg-[#FFFDF7] backdrop-blur-md border-2 border-[#D4AF37] shadow-[0_6px_25px_rgba(212,175,55,0.45)] hover:shadow-[0_8px_30px_rgba(212,175,55,0.7)] transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer"
+          aria-label="Scroll down"
+          className="group relative z-10 flex flex-col items-center justify-center bg-transparent border-0 p-1.5 transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer focus:outline-none"
         >
-          {/* Pulsating Indicating Outer Halo Ring */}
-          <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#D4AF37]/50 via-[#FFD54F]/70 to-[#D4AF37]/50 blur-xs opacity-75 animate-pulse group-hover:opacity-100 transition-opacity pointer-events-none" />
-
-          {/* Auspicious Diya */}
-          <span className="relative text-base sm:text-lg animate-bounce drop-shadow-sm">
-            🪔
-          </span>
-
-          {/* Bigger, Bold Devotional Title */}
-          <div className="relative flex flex-col items-start text-left leading-tight">
-            <span className="font-serif text-[11px] sm:text-xs font-black uppercase tracking-[0.2em] text-[#B8141B] drop-shadow-xs">
-              Scroll Down To Explore
-            </span>
-            <span className="font-serif text-[9px] uppercase tracking-[0.16em] text-[#E65100] font-bold">
-              पवित्र निमंत्रण दर्शन हेतु ↓
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs drop-shadow-xs">🪔</span>
+            <span className="font-serif text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#B8141B] drop-shadow-[0_1px_2px_rgba(255,255,255,0.95)]">
+              Scroll down
             </span>
           </div>
 
-          {/* Indicating Downward Arrow with Bounce Effect */}
-          <div className="relative w-7 h-7 rounded-full bg-[#B8141B] border border-[#FFD54F] flex items-center justify-center shadow-xs text-[#FFFDF7] group-hover:bg-[#800C12] transition-colors">
-            <ChevronsDown className="w-4 h-4 text-[#FFD54F] animate-bounce stroke-[3]" />
-          </div>
+          <motion.div
+            animate={{
+              y: [0, 4, 0],
+              scale: [1, 1.15, 1],
+            }}
+            transition={{
+              duration: 1.4,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="text-[#B8141B] mt-0.5"
+          >
+            <ChevronsDown className="w-5 h-5 stroke-[2.6]" />
+          </motion.div>
         </button>
       </div>
     </div>
