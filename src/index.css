@@ -44,6 +44,33 @@ body {
 }
 
 /* Environment Animations for marigold petals & sacred sparkles (delicate, low-density drift) */
+@keyframes floating-petals {
+  0% {
+    transform: translateY(-10vh) translateX(0px) rotate(0deg) scale(0.9);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--petal-opacity, 0.5);
+  }
+  50% {
+    transform: translateY(50vh) translateX(var(--petal-sway, 28px)) rotate(calc(var(--petal-rotate, 160deg) * 0.5)) scale(1);
+    opacity: var(--petal-opacity, 0.5);
+  }
+  90% {
+    opacity: var(--petal-opacity, 0.5);
+  }
+  100% {
+    transform: translateY(112vh) translateX(calc(var(--petal-sway, 28px) * -0.5)) rotate(var(--petal-rotate, 160deg)) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.animate-floating-petals {
+  animation: floating-petals var(--petal-duration, 20s) ease-in-out infinite;
+  animation-delay: var(--petal-delay, 0s);
+  will-change: transform, opacity;
+}
+
 @keyframes petal-fall {
   0% { top: -10%; opacity: 0; }
   12% { opacity: 0.55; }

@@ -21,6 +21,8 @@ import { Reveal } from './components/Reveal';
 import { EnvironmentEffects } from './components/EnvironmentEffects';
 import { ParallaxDivider } from './components/ParallaxDivider';
 import { OpeningTransition } from './components/OpeningTransition';
+import { ScrollPrompt } from './components/ScrollPrompt';
+import { FullScreenScrollFlash } from './components/FullScreenScrollFlash';
 
 function PublicView() {
   const [searchParams] = useSearchParams();
@@ -32,16 +34,18 @@ function PublicView() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isHeroEnded, setIsHeroEnded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showScrollFlash, setShowScrollFlash] = useState(false);
   const openingVideoRef = React.useRef<HTMLVideoElement>(null);
 
-  // Auto-scroll animation logic if user hasn't scrolled yet
+  // Auto-scroll upward animation logic if user hasn't scrolled yet
   const hasUserScrolledRef = React.useRef(false);
   const autoScrollTriggeredRef = React.useRef(false);
 
   useEffect(() => {
     const handleUserScroll = () => {
-      if (window.scrollY > 30) {
+      if (window.scrollY > 25) {
         hasUserScrolledRef.current = true;
+        setShowScrollFlash(false);
       }
     };
     window.addEventListener('scroll', handleUserScroll, { passive: true });
@@ -54,18 +58,78 @@ function PublicView() {
     };
   }, []);
 
-  const triggerAutoScrollNudge = React.useCallback(() => {
-    if (autoScrollTriggeredRef.current || hasUserScrolledRef.current) return;
-    if (window.scrollY > 30) return;
-    
+  // Trigger 2-3 times upward-initial position scroll animation
+  const triggerUpwardBounceSequence = React.useCallback(() => {
+    if (hasUserScrolledRef.current || window.scrollY > 20) return;
     autoScrollTriggeredRef.current = true;
-    
-    // Smoothly scroll down a small part (~220px) to reveal the next section
-    window.scrollBy({
-      top: 230,
-      behavior: 'smooth'
-    });
+
+    // Bounce 1: Upward
+    window.scrollTo({ top: 135, behavior: 'smooth' });
+
+    // Bounce 1: Back to initial position
+    const t1 = setTimeout(() => {
+      if (hasUserScrolledRef.current) return;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 850);
+
+    // Bounce 2: Upward
+    const t2 = setTimeout(() => {
+      if (hasUserScrolledRef.current) return;
+      window.scrollTo({ top: 145, behavior: 'smooth' });
+    }, 1650);
+
+    // Bounce 2: Back to initial position
+    const t3 = setTimeout(() => {
+      if (hasUserScrolledRef.current) return;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 2500);
+
+    // Bounce 3: Upward
+    const t4 = setTimeout(() => {
+      if (hasUserScrolledRef.current) return;
+      window.scrollTo({ top: 135, behavior: 'smooth' });
+    }, 3300);
+
+    // Bounce 3: Back to initial position
+    const t5 = setTimeout(() => {
+      if (hasUserScrolledRef.current) return;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 4150);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
+    };
   }, []);
+
+  // Make the hero section move upward-initial 2-3 times after 3 seconds of being on hero section
+  useEffect(() => {
+    if (viewState === 'main') {
+      const timer = setTimeout(() => {
+        triggerUpwardBounceSequence();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [viewState, triggerUpwardBounceSequence]);
+
+  // Full screen instant flash animation for 1 sec if someone has not scrolled for 10 seconds
+  useEffect(() => {
+    if (viewState === 'main') {
+      const flashTimer = setTimeout(() => {
+        if (!hasUserScrolledRef.current && window.scrollY < 20) {
+          setShowScrollFlash(true);
+          const endTimer = setTimeout(() => {
+            setShowScrollFlash(false);
+          }, 1000);
+          return () => clearTimeout(endTimer);
+        }
+      }, 10000);
+      return () => clearTimeout(flashTimer);
+    }
+  }, [viewState]);
 
   useEffect(() => {
     async function loadData() {
@@ -83,13 +147,6 @@ function PublicView() {
   const handleTransitionEnd = () => {
     setIsTransitioning(false);
     setViewState('main');
-
-    // If opening video ended and transitioned to main, and no hero video is present, trigger gentle peek scroll after 2s
-    if (!data?.heroVideoUrl) {
-      setTimeout(() => {
-        triggerAutoScrollNudge();
-      }, 2000);
-    }
   };
 
   const handleVideoEnd = () => {
@@ -99,33 +156,19 @@ function PublicView() {
 
   const handleHeroVideoEnd = () => {
     setIsHeroEnded(true);
-    // Smoothly nudge the website down a small part after the hero video ends
+    // When hero video ends, smoothly trigger upward bounce sequence if not scrolled yet
     setTimeout(() => {
-      triggerAutoScrollNudge();
-    }, 500);
+      triggerUpwardBounceSequence();
+    }, 300);
   };
-
-  // If user enters main view with static hero image, trigger scroll hint after 3.8s if no scroll occurred
-  useEffect(() => {
-    if (viewState === 'main' && !data?.heroVideoUrl) {
-      const timer = setTimeout(() => {
-        triggerAutoScrollNudge();
-      }, 3800);
-      return () => clearTimeout(timer);
-    }
-  }, [viewState, data?.heroVideoUrl, triggerAutoScrollNudge]);
 
   const handleScrollDownClick = () => {
     hasUserScrolledRef.current = true;
-    const nextElem = document.getElementById('invitation-content');
-    if (nextElem) {
-      nextElem.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.scrollTo({
-        top: window.innerHeight * 0.85,
-        behavior: 'smooth'
-      });
-    }
+    setShowScrollFlash(false);
+    window.scrollTo({
+      top: window.innerHeight * 0.92,
+      behavior: 'smooth'
+    });
   };
 
   const handleThumbnailClick = () => {
@@ -213,8 +256,10 @@ function PublicView() {
           data={data} 
           shouldPlayVideo={viewState === 'main'} 
           onVideoEnd={handleHeroVideoEnd}
-          onScrollDown={handleScrollDownClick}
         />
+
+        {/* Transparent & slightly visible scroll down prompt positioned just below the hero section and top of next section */}
+        <ScrollPrompt onClick={handleScrollDownClick} />
 
         {/* Anchor for smooth scroll from hero button */}
         <div id="invitation-content" className="relative -top-2" />
@@ -320,6 +365,9 @@ function PublicView() {
         isActive={isTransitioning} 
         onComplete={handleTransitionEnd} 
       />
+
+      {/* Full Screen Instant Flash Animation for 1 sec if user has not scrolled for 10 seconds */}
+      <FullScreenScrollFlash isVisible={showScrollFlash} />
     </div>
   );
 }
