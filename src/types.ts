@@ -60,10 +60,28 @@ export interface VenueDetails {
   landmarks?: string;
 }
 
+export interface SectionVisibility {
+  scratchCard?: boolean;
+  hero?: boolean;
+  venue?: boolean;
+  deviShrine?: boolean;
+  invitationMessage?: boolean;
+  familyInvitation?: boolean;
+  events?: boolean;
+  lightDiya?: boolean;
+  rsvp?: boolean;
+  contact?: boolean;
+  closingMessage?: boolean;
+  footer?: boolean;
+}
+
 export interface WeddingData {
   // Legacy groom/bride fields kept for type compatibility
   groom?: Person;
   bride?: Person;
+  
+  // Section show/hide visibility toggles
+  sectionVisibility?: SectionVisibility;
   
   // Mata Ki Chowki specific event fields
   eventName?: string;

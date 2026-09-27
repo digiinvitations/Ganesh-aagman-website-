@@ -79,18 +79,40 @@ function PublicView() {
     isSelfScrollingActiveRef.current = false;
   }, []);
 
-  // Smoothly scroll down to the next section in the list
+  const visibility = data?.sectionVisibility || {};
+  const isScratchCardActive = visibility.scratchCard !== false;
+  const isContentRevealed = !isScratchCardActive || isInvitationRevealed;
+
+  // Dynamically compute active section IDs based on admin visibility toggles
+  const activeSectionIds = React.useMemo(() => {
+    return [
+      visibility.scratchCard !== false ? 'scratch-card-section' : null,
+      visibility.hero !== false ? 'section-hero' : null,
+      visibility.venue !== false ? 'section-venue' : null,
+      visibility.deviShrine !== false ? 'section-devi' : null,
+      visibility.invitationMessage !== false ? 'section-message' : null,
+      visibility.familyInvitation !== false ? 'section-family' : null,
+      visibility.events !== false ? 'section-events' : null,
+      visibility.lightDiya !== false ? 'section-diya' : null,
+      visibility.rsvp !== false ? 'section-rsvp' : null,
+      visibility.contact !== false ? 'section-contact' : null,
+      visibility.closingMessage !== false ? 'section-closing' : null,
+      visibility.footer !== false ? 'section-footer' : null,
+    ].filter(Boolean) as string[];
+  }, [visibility]);
+
+  // Smoothly scroll down to the next visible section in the list
   const scrollToNextSection = React.useCallback(() => {
     const currentScroll = window.scrollY;
     let nextTargetId: string | null = null;
 
-    for (let i = 0; i < SECTION_IDS.length; i++) {
-      const el = document.getElementById(SECTION_IDS[i]);
+    for (let i = 0; i < activeSectionIds.length; i++) {
+      const el = document.getElementById(activeSectionIds[i]);
       if (el) {
         const top = el.getBoundingClientRect().top + window.scrollY;
-        // Find the first section that begins distinctly below the current viewport top (margin of 75px)
+        // Find the first visible section that begins distinctly below the current viewport top (margin of 75px)
         if (top > currentScroll + 75) {
-          nextTargetId = SECTION_IDS[i];
+          nextTargetId = activeSectionIds[i];
           break;
         }
       }
@@ -106,12 +128,12 @@ function PublicView() {
           isAutoScrollingRef.current = false;
         }, 1100);
 
-        const isLast = nextTargetId === SECTION_IDS[SECTION_IDS.length - 1];
+        const isLast = nextTargetId === activeSectionIds[activeSectionIds.length - 1];
         return !isLast;
       }
     }
     return false;
-  }, []);
+  }, [activeSectionIds]);
 
   // Start self-scrolling section wise every 3-4 seconds
   const startSelfScrolling = React.useCallback(() => {
@@ -120,7 +142,7 @@ function PublicView() {
 
     isSelfScrollingActiveRef.current = true;
 
-    // After scratching, give 2.2s for celebration chime, confetti & viewing the countdown,
+    // After scratching, give 1.4s for celebration chime, confetti & viewing the countdown,
     // then smoothly scroll full section after every 3.5 seconds (within 3-4s range)
     const scheduleNext = (delayMs: number) => {
       autoScrollTimerRef.current = setTimeout(() => {
@@ -138,7 +160,7 @@ function PublicView() {
       }, delayMs);
     };
 
-    scheduleNext(2200);
+    scheduleNext(1400);
   }, [scrollToNextSection, stopSelfScrolling]);
 
   // Cancel self-scrolling as soon as user manually starts scrolling or touches screen
@@ -307,87 +329,99 @@ function PublicView() {
             First section visitor faces on entry.
             Scratching reveals date, starts countdown, and unlocks the other sections!
         ======================================================== */}
-        <Countdown 
-          targetDate={data.weddingDate} 
-          dateFormatted={data.weddingDateFormatted}
-          dayFormatted={data.weddingDayFormatted}
-          timeFormatted={data.weddingTimeFormatted}
-          venueName={data.venue?.name}
-          onScratched={handleCardScratched}
-          isInitiallyScratched={isInvitationRevealed}
-        />
+        {visibility.scratchCard !== false && (
+          <Countdown 
+            targetDate={data.weddingDate} 
+            dateFormatted={data.weddingDateFormatted}
+            dayFormatted={data.weddingDayFormatted}
+            timeFormatted={data.weddingTimeFormatted}
+            venueName={data.venue?.name}
+            onScratched={handleCardScratched}
+            isInitiallyScratched={isInvitationRevealed}
+          />
+        )}
 
-        {/* Once card is scratched, show prominent scroll prompt with floating marigold petals */}
-        {isInvitationRevealed && (
+        {/* Once card is scratched (and if card is active), show prominent scroll prompt with floating marigold petals */}
+        {isContentRevealed && isScratchCardActive && (
           <ScrollPrompt onClick={handleScrollDownClick} />
         )}
 
         {/* ========================================================
             REVEALED SECTIONS
-            Becomes visible and accessible once the card is scratched!
+            Becomes visible and accessible once the card is scratched (or immediately if card is hidden)!
         ======================================================== */}
-        {isInvitationRevealed && (
+        {isContentRevealed && (
           <motion.div
-            initial={{ opacity: 0, y: 35 }}
+            initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.85, ease: "easeOut" }}
+            transition={{ duration: 0.65, ease: "easeOut" }}
             className="w-full flex flex-col items-center"
           >
-            <ParallaxDivider />
-
             {/* ========================================================
                 2. HERO SECTION
             ======================================================== */}
-            <div id="section-hero" className="w-full">
-              <Hero 
-                data={data} 
-                shouldPlayVideo={viewState === 'main'} 
-                onVideoEnd={handleHeroVideoEnd}
-              />
-            </div>
-
-            <ParallaxDivider />
+            {visibility.hero !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-hero" className="w-full">
+                  <Hero 
+                    data={data} 
+                    shouldPlayVideo={viewState === 'main'} 
+                    onVideoEnd={handleHeroVideoEnd}
+                  />
+                </div>
+              </>
+            )}
 
             {/* ========================================================
                 3. VENUE SECTION
             ======================================================== */}
-            <div id="section-venue" className="w-full">
-              <Reveal delay={0.1}>
-                <Venue 
-                  venue={data.venue} 
-                  groom={data.groom} 
-                  bride={data.bride} 
-                  weddingDate={data.weddingDate} 
-                />
-              </Reveal>
-            </div>
-
-            <ParallaxDivider />
+            {visibility.venue !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-venue" className="w-full">
+                  <Reveal delay={0.1}>
+                    <Venue 
+                      venue={data.venue} 
+                      groom={data.groom} 
+                      bride={data.bride} 
+                      weddingDate={data.weddingDate} 
+                    />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
             {/* ========================================================
                 4. KAROLI WALI MATA WITH IMAGE SECTION
             ======================================================== */}
-            <div id="section-devi" className="w-full">
-              <Reveal delay={0.1}>
-                <DeviShrine data={data} />
-              </Reveal>
-            </div>
-
-            <ParallaxDivider />
+            {visibility.deviShrine !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-devi" className="w-full">
+                  <Reveal delay={0.1}>
+                    <DeviShrine data={data} />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
             {/* ========================================================
                 5. जय माता दी MESSAGE SECTION
             ======================================================== */}
-            <div id="section-message" className="w-full">
-              <Reveal delay={0.1}>
-                <InvitationMessage 
-                  message={data.invitationMessage} 
-                  isHeroEnded={isHeroEnded} 
-                />
-              </Reveal>
-            </div>
-
-            <ParallaxDivider />
+            {visibility.invitationMessage !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-message" className="w-full">
+                  <Reveal delay={0.1}>
+                    <InvitationMessage 
+                      message={data.invitationMessage} 
+                      isHeroEnded={isHeroEnded} 
+                    />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
             {/* ========================================================
                 AFTER THIS ALL OTHER REQUIRED SECTIONS:
@@ -399,61 +433,83 @@ function PublicView() {
                 11. Closing Message
                 12. Footer
             ======================================================== */}
-            <div id="section-family" className="w-full">
-              <Reveal delay={0.1}>
-                <FamilyInvitation data={data} />
-              </Reveal>
-            </div>
+            {visibility.familyInvitation !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-family" className="w-full">
+                  <Reveal delay={0.1}>
+                    <FamilyInvitation data={data} />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
-            <ParallaxDivider />
+            {visibility.events !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-events" className="w-full">
+                  <Reveal delay={0.1}>
+                    <Events 
+                      events={data.events} 
+                      globalLogo={data.globalLogo} 
+                      mataKiChowkiImageUrl={data.mataKiChowkiImageUrl} 
+                    />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
-            <div id="section-events" className="w-full">
-              <Reveal delay={0.1}>
-                <Events 
-                  events={data.events} 
-                  globalLogo={data.globalLogo} 
-                  mataKiChowkiImageUrl={data.mataKiChowkiImageUrl} 
-                />
-              </Reveal>
-            </div>
+            {visibility.lightDiya !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-diya" className="w-full">
+                  <Reveal delay={0.1}>
+                    <LightDiya />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
-            <ParallaxDivider />
+            {visibility.rsvp !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-rsvp" className="w-full">
+                  <Reveal delay={0.1}>
+                    <RSVP />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
-            <div id="section-diya" className="w-full">
-              <Reveal delay={0.1}>
-                <LightDiya />
-              </Reveal>
-            </div>
+            {visibility.contact !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-contact" className="w-full">
+                  <Reveal delay={0.1}>
+                    <Contact data={data} />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
-            <ParallaxDivider />
+            {visibility.closingMessage !== false && (
+              <>
+                <ParallaxDivider />
+                <div id="section-closing" className="w-full">
+                  <Reveal delay={0.1}>
+                    <ClosingMessage data={data} />
+                  </Reveal>
+                </div>
+              </>
+            )}
 
-            <div id="section-rsvp" className="w-full">
-              <Reveal delay={0.1}>
-                <RSVP />
-              </Reveal>
-            </div>
-
-            <ParallaxDivider />
-
-            <div id="section-contact" className="w-full">
-              <Reveal delay={0.1}>
-                <Contact data={data} />
-              </Reveal>
-            </div>
-
-            <ParallaxDivider />
-
-            <div id="section-closing" className="w-full">
-              <Reveal delay={0.1}>
-                <ClosingMessage data={data} />
-              </Reveal>
-            </div>
-
-            <div id="section-footer" className="w-full">
-              <Reveal delay={0.1}>
-                <Footer data={data} />
-              </Reveal>
-            </div>
+            {visibility.footer !== false && (
+              <div id="section-footer" className="w-full">
+                <Reveal delay={0.1}>
+                  <Footer data={data} />
+                </Reveal>
+              </div>
+            )}
           </motion.div>
         )}
       </main>
@@ -461,7 +517,7 @@ function PublicView() {
       {/* Floating Scroll Down Indicator with animated bigger down arrow */}
       <FloatingScrollIndicator 
         onScrollNext={scrollToNextSection} 
-        visible={viewState === 'main' && isInvitationRevealed} 
+        visible={viewState === 'main' && isContentRevealed} 
       />
 
       {/* Opening Video Overlay */}

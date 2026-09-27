@@ -27,17 +27,17 @@ function playCelebrationChime() {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+      osc.frequency.setValueAtTime(freq, now + idx * 0.08);
 
-      gain.gain.setValueAtTime(0.001, now + idx * 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.1 + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.1 + 1.6);
+      gain.gain.setValueAtTime(0.001, now + idx * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.08 + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 1.5);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(now + idx * 0.1);
-      osc.stop(now + idx * 0.1 + 1.8);
+      osc.start(now + idx * 0.08);
+      osc.stop(now + idx * 0.08 + 1.6);
     });
   } catch {
     // ignore audio block
@@ -53,11 +53,11 @@ export function Countdown({
   onScratched,
   isInitiallyScratched = false,
 }: CountdownProps) {
-  // Scratch progression:
-  // 1: Layer 1 (Gold Foil with "SCRATCH GOLD FOIL")
-  // 2: Layer 2 (Gold Foil with "SCRATCH GOLD FOIL")
-  // 3: Both layers cleared -> Date Revealed & Countdown Activated & Rest of Website Revealed!
-  const [scratchLayer, setScratchLayer] = useState<1 | 2 | 3>(isInitiallyScratched ? 3 : 1);
+  // Ultra-smooth single-layer scratch reveal:
+  // false = Unscratched Gold Foil
+  // true = Scratched & Revealed (Countdown and website active)
+  const [isScratched, setIsScratched] = useState(isInitiallyScratched);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
   // Canvas refs
@@ -65,7 +65,8 @@ export function Countdown({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isDrawingRef = useRef(false);
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
-  const lastCheckTimeRef = useRef(0);
+  const isTriggeredRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Live countdown state
   const [timeLeft, setTimeLeft] = useState({
@@ -99,21 +100,20 @@ export function Countdown({
   const triggerCelebration = useCallback(() => {
     playCelebrationChime();
 
-    // Multi-cannon celebratory confetti
     try {
-      const end = Date.now() + 1600;
+      const end = Date.now() + 1500;
       const colors = ["#D4AF37", "#FFBF00", "#B8141B", "#FFE58F", "#FF7A00"];
 
       (function frame() {
         confetti({
-          particleCount: 6,
+          particleCount: 7,
           angle: 60,
           spread: 60,
           origin: { x: 0, y: 0.65 },
           colors,
         });
         confetti({
-          particleCount: 6,
+          particleCount: 7,
           angle: 120,
           spread: 60,
           origin: { x: 1, y: 0.65 },
@@ -129,36 +129,47 @@ export function Countdown({
     }
   }, []);
 
-  // Draw foil on canvas: Luxurious metallic foil with "SCRATCH GOLD FOIL"
-  const drawFoil = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, layer: 1 | 2) => {
+  // Complete the scratch reveal smoothly and immediately
+  const completeReveal = useCallback(() => {
+    if (isTriggeredRef.current) return;
+    isTriggeredRef.current = true;
+    setIsFadingOut(true);
+
+    // Trigger celebration chime & confetti immediately
+    triggerCelebration();
+
+    // Call onScratched immediately so website reveals smoothly without waiting
+    onScratched?.();
+
+    // Transition state smoothly
+    setTimeout(() => {
+      setIsScratched(true);
+      setIsFadingOut(false);
+    }, 380);
+  }, [triggerCelebration, onScratched]);
+
+  // Draw 24K Royal Gold foil on canvas
+  const drawFoil = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number) => {
     ctx.clearRect(0, 0, width, height);
 
-    // Multi-stop 24K Royal Gold gradient
+    // Multi-stop 24K Royal Gold reflective gradient
     const grad = ctx.createLinearGradient(0, 0, width, height);
-    if (layer === 1) {
-      grad.addColorStop(0, "#9A6B1F");
-      grad.addColorStop(0.18, "#FDF6C7");
-      grad.addColorStop(0.38, "#DAA520");
-      grad.addColorStop(0.55, "#FFE685");
-      grad.addColorStop(0.72, "#B38728");
-      grad.addColorStop(0.88, "#FFF0A3");
-      grad.addColorStop(1, "#8B6508");
-    } else {
-      grad.addColorStop(0, "#AA771C");
-      grad.addColorStop(0.2, "#FFE082");
-      grad.addColorStop(0.45, "#FFBF00");
-      grad.addColorStop(0.7, "#FFD54F");
-      grad.addColorStop(0.85, "#FFA000");
-      grad.addColorStop(1, "#7A5005");
-    }
+    grad.addColorStop(0, "#AA771C");
+    grad.addColorStop(0.18, "#FFF3B3");
+    grad.addColorStop(0.38, "#D4AF37");
+    grad.addColorStop(0.55, "#FFF9D2");
+    grad.addColorStop(0.72, "#B38728");
+    grad.addColorStop(0.88, "#FFDF79");
+    grad.addColorStop(1, "#8B6508");
+
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
-    // Subtle diagonal luxury foil luster texture
+    // Subtle diagonal luxury foil luster lines
     ctx.save();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.32)";
     ctx.lineWidth = 1.5;
-    for (let i = -width; i < width + height; i += 16) {
+    for (let i = -width; i < width + height; i += 18) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
       ctx.lineTo(i + height, height);
@@ -171,7 +182,7 @@ export function Countdown({
     ctx.strokeStyle = "rgba(110, 60, 8, 0.4)";
     ctx.lineWidth = 2;
     ctx.strokeRect(8, 8, width - 16, height - 16);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
     ctx.lineWidth = 1;
     ctx.strokeRect(12, 12, width - 24, height - 24);
 
@@ -185,24 +196,24 @@ export function Countdown({
     ctx.fillText("✦", 18, height - 18);
     ctx.fillText("✦", width - 18, height - 18);
 
-    // The text written on the scratch box: SCRATCH GOLD FOIL
+    // Sacred text on foil: SCRATCH GOLD FOIL
     const fontSize = Math.max(15, Math.floor(Math.min(width * 0.055, 22)));
     ctx.font = `800 ${fontSize}px 'Cinzel', 'Playfair Display', Georgia, serif`;
     ctx.letterSpacing = "0.18em";
 
     // Embossed shadow
-    ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
+    ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
     ctx.shadowBlur = 1;
     ctx.shadowOffsetY = 1;
     ctx.fillStyle = "#422104";
-    ctx.fillText("SCRATCH GOLD FOIL", width / 2, height / 2);
+    ctx.fillText("✦ SCRATCH GOLD FOIL ✦", width / 2, height / 2);
 
     ctx.restore();
   }, []);
 
-  // Initialize canvas
+  // Initialize canvas with proper resolution
   const initCanvas = useCallback(() => {
-    if (scratchLayer === 3) return;
+    if (isScratched) return;
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
@@ -213,85 +224,80 @@ export function Countdown({
 
     if (width === 0 || height === 0) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = width * dpr;
     canvas.height = height * dpr;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
     ctx.scale(dpr, dpr);
-    drawFoil(ctx, width, height, scratchLayer);
-  }, [scratchLayer, drawFoil]);
+    drawFoil(ctx, width, height);
+    isTriggeredRef.current = false;
+  }, [isScratched, drawFoil]);
 
   useEffect(() => {
     initCanvas();
     const handleResize = () => initCanvas();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [initCanvas, scratchLayer, resetKey]);
+  }, [initCanvas, resetKey]);
 
-  // Scratch progress calculation
+  // Fast & responsive scratch percentage check
   const checkScratchPercentage = useCallback(() => {
+    if (isTriggeredRef.current || isScratched) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
     const width = canvas.width;
     const height = canvas.height;
-    const imgData = ctx.getImageData(0, 0, width, height);
-    const data = imgData.data;
+    if (width === 0 || height === 0) return;
 
-    let transparentPixels = 0;
-    let sampledPixels = 0;
-    for (let i = 3; i < data.length; i += 4 * 16) {
-      sampledPixels++;
-      if (data[i] < 128) {
-        transparentPixels++;
+    try {
+      const imgData = ctx.getImageData(0, 0, width, height);
+      const data = imgData.data;
+
+      let transparentPixels = 0;
+      let sampledPixels = 0;
+      // Step sampling for fast non-blocking calculation
+      for (let i = 3; i < data.length; i += 4 * 24) {
+        sampledPixels++;
+        if (data[i] < 128) {
+          transparentPixels++;
+        }
       }
-    }
 
-    const percentage = (transparentPixels / sampledPixels) * 100;
+      const percentage = (transparentPixels / sampledPixels) * 100;
 
-    // Threshold 28% for pleasant, responsive reveal
-    if (percentage > 28) {
-      if (scratchLayer === 1) {
-        // Layer 1 cleared -> Advance to Layer 2
-        try {
-          confetti({
-            particleCount: 22,
-            spread: 45,
-            origin: { y: 0.55 },
-            colors: ["#D4AF37", "#FFE58F", "#FF7A00"],
-          });
-        } catch {}
-        setScratchLayer(2);
-      } else if (scratchLayer === 2) {
-        // Layer 2 cleared -> Final Reveal & Automatically Activate Countdown & Reveal other sections!
-        setScratchLayer(3);
-        triggerCelebration();
-        onScratched?.();
+      // Responsive threshold of 22%: user scratches just a couple of smooth strokes and it immediately unlocks!
+      if (percentage > 22) {
+        completeReveal();
       }
+    } catch {
+      // fallback
     }
-  }, [scratchLayer, triggerCelebration, onScratched]);
+  }, [completeReveal, isScratched]);
 
+  // Silky smooth scratch gesture
   const scratch = (clientX: number, clientY: number) => {
+    if (isTriggeredRef.current || isScratched) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const x = clientX - rect.left;
     const y = clientY - rect.top;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     ctx.save();
     ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 38 * dpr;
+    ctx.lineWidth = 48 * dpr;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
@@ -302,24 +308,27 @@ export function Countdown({
       ctx.stroke();
     } else {
       ctx.beginPath();
-      ctx.arc(x * dpr, y * dpr, 19 * dpr, 0, Math.PI * 2);
+      ctx.arc(x * dpr, y * dpr, 24 * dpr, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();
 
     lastPosRef.current = { x, y };
 
-    const now = Date.now();
-    if (now - lastCheckTimeRef.current > 110) {
-      lastCheckTimeRef.current = now;
-      checkScratchPercentage();
+    if (!animationFrameRef.current) {
+      animationFrameRef.current = requestAnimationFrame(() => {
+        checkScratchPercentage();
+        animationFrameRef.current = null;
+      });
     }
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     isDrawingRef.current = true;
     lastPosRef.current = null;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
     scratch(e.clientX, e.clientY);
   };
 
@@ -333,22 +342,20 @@ export function Countdown({
     lastPosRef.current = null;
     try {
       (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // ignore
-    }
+    } catch {}
     checkScratchPercentage();
   };
 
-  // Quick auto-reveal feature
+  // Instant Quick Auto-Reveal feature
   const handleQuickReveal = () => {
-    setScratchLayer(3);
-    triggerCelebration();
-    onScratched?.();
+    completeReveal();
   };
 
   // Re-scratch reset feature
   const handleReset = () => {
-    setScratchLayer(1);
+    isTriggeredRef.current = false;
+    setIsScratched(false);
+    setIsFadingOut(false);
     setResetKey((prev) => prev + 1);
   };
 
@@ -382,11 +389,11 @@ export function Countdown({
 
         {/* Scratch Guidance / Celebration Status Banner */}
         <div className="mb-3 w-full flex justify-center">
-          {scratchLayer !== 3 ? (
+          {!isScratched ? (
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFFDF7] border border-[#D4AF37] shadow-[0_2px_12px_rgba(212,175,55,0.25)] animate-pulse">
               <span className="text-xs text-[#E65100]">🪔</span>
               <span className="font-serif text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-[#B8141B]">
-                {scratchLayer === 1 ? "Scratch Gold Foil to Reveal" : "Keep Scratching to Unlock!"}
+                Scratch Gold Foil to Reveal
               </span>
               <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
             </div>
@@ -441,29 +448,24 @@ export function Countdown({
               )}
             </div>
 
-            {/* Scratch Foil Canvas Layer (Layers 1 and 2) */}
-            <AnimatePresence mode="wait">
-              {scratchLayer !== 3 && (
-                <motion.canvas
-                  key={`canvas-${scratchLayer}-${resetKey}`}
-                  ref={canvasRef}
-                  initial={{ opacity: 0.95 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  transition={{ duration: 0.35 }}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onPointerCancel={handlePointerUp}
-                  className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none z-20"
-                  style={{ touchAction: "none" }}
-                />
-              )}
-            </AnimatePresence>
+            {/* Silky-smooth Scratch Foil Canvas Layer */}
+            {!isScratched && (
+              <canvas
+                ref={canvasRef}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                className={`absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none z-20 transition-all duration-300 ${
+                  isFadingOut ? "opacity-0 scale-105 pointer-events-none blur-[2px]" : "opacity-100 scale-100"
+                }`}
+                style={{ touchAction: "none" }}
+              />
+            )}
           </div>
 
           {/* Quick Reveal button for convenience when unscratched */}
-          {scratchLayer !== 3 && (
+          {!isScratched && (
             <div className="mt-3.5 flex flex-col items-center gap-1.5">
               <button
                 type="button"
@@ -479,15 +481,15 @@ export function Countdown({
           )}
 
           {/* 
-            THE COUNTDOWN
-            Automatically starts and becomes visible upon scratching the date card
+            THE LIVE COUNTDOWN
+            Automatically starts and becomes visible smoothly upon scratching the date card
           */}
           <AnimatePresence>
-            {scratchLayer === 3 && (
+            {isScratched && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: 12 }}
+                initial={{ opacity: 0, scale: 0.94, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
                 className="w-full mt-5 flex flex-col items-center"
               >
                 {/* Countdown Header */}

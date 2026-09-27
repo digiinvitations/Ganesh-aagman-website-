@@ -1,8 +1,101 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { getWeddingData, saveWeddingData, checkTemplateExists } from "../services/db";
-import { WeddingData } from "../types";
-import { Save, Image as ImageIcon, ArrowLeft, Download, Upload, Plus, Trash2, Share2 } from "lucide-react";
+import { WeddingData, SectionVisibility } from "../types";
+import { Save, Image as ImageIcon, ArrowLeft, Download, Upload, Plus, Trash2, Share2, Eye, EyeOff, SlidersHorizontal } from "lucide-react";
+
+const SECTION_METADATA: Array<{
+  key: keyof SectionVisibility;
+  label: string;
+  hindiLabel: string;
+  icon: string;
+  desc: string;
+}> = [
+  {
+    key: "scratchCard",
+    label: "Scratch Card & Countdown",
+    hindiLabel: "गोल्ड फॉयल स्क्रैच कार्ड व काउंटडाउन",
+    icon: "✨",
+    desc: "24K Gold foil scratch card and live countdown timer.",
+  },
+  {
+    key: "hero",
+    label: "Hero Darshan (Image/Video)",
+    hindiLabel: "मुख्य दर्शन (फोटो / वीडियो)",
+    icon: "🖼️",
+    desc: "HD/4K devotional image or video banner displaying Maa Karoli.",
+  },
+  {
+    key: "venue",
+    label: "Venue & Muhurat Details",
+    hindiLabel: "स्थान व शुभ मुहूर्त",
+    icon: "📍",
+    desc: "Event location, muhurat date/time, and Google Maps navigation.",
+  },
+  {
+    key: "deviShrine",
+    label: "Karoli Wali Mata Shrine",
+    hindiLabel: "करोली वाली माता मंदिर दर्शन",
+    icon: "🛕",
+    desc: "Karoli Wali Mata's divine photo, Jai Kara, and sacred chants.",
+  },
+  {
+    key: "invitationMessage",
+    label: "Jai Mata Di Message",
+    hindiLabel: "॥ जय माता दी ॥ संदेश",
+    icon: "📜",
+    desc: "Heartfelt devotional message and personal invitation note.",
+  },
+  {
+    key: "familyInvitation",
+    label: "Family Invitation (Elders)",
+    hindiLabel: "परिवार एवं बुजुर्गों का आमंत्रण",
+    icon: "🙏",
+    desc: "Blessings and welcoming greetings from host family elders.",
+  },
+  {
+    key: "events",
+    label: "Events & Program Schedule",
+    hindiLabel: "कार्यक्रम एवं चौकी समय सारणी",
+    icon: "📅",
+    desc: "Itinerary for Bhajans, Aarti, and Mahaprasad distribution.",
+  },
+  {
+    key: "lightDiya",
+    label: "Light a Diya (Virtual Pooja)",
+    hindiLabel: "दीपक प्रज्वलन (आरती व दीया)",
+    icon: "🪔",
+    desc: "Interactive virtual diya lighting for Maa Karoli's blessings.",
+  },
+  {
+    key: "rsvp",
+    label: "RSVP & Blessings Form",
+    hindiLabel: "उपस्थिति सूचना (RSVP)",
+    icon: "💌",
+    desc: "Online guest attendance response and wishes form.",
+  },
+  {
+    key: "contact",
+    label: "Contact & Helpline",
+    hindiLabel: "संपर्क सूत्र एवं सहायता",
+    icon: "📞",
+    desc: "Host family contact numbers for guests' queries.",
+  },
+  {
+    key: "closingMessage",
+    label: "Closing Message & Aashirwad",
+    hindiLabel: "समापन संदेश व माता का आशीर्वाद",
+    icon: "🌺",
+    desc: "Concluding devotional blessings thanking attendees.",
+  },
+  {
+    key: "footer",
+    label: "Footer Section",
+    hindiLabel: "वेबसाइट फुटर",
+    icon: "🕉️",
+    desc: "Bottom footer with sacred mantra and copyright note.",
+  },
+];
 
 export function AdminPanel() {
   const [searchParams] = useSearchParams();
@@ -90,6 +183,39 @@ export function AdminPanel() {
       handleChange(field, base64String);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleToggleSection = (sectionKey: keyof SectionVisibility) => {
+    setData((prev: any) => {
+      const currentVal = prev?.sectionVisibility?.[sectionKey] !== false;
+      return {
+        ...prev,
+        sectionVisibility: {
+          ...(prev?.sectionVisibility || {}),
+          [sectionKey]: !currentVal,
+        },
+      };
+    });
+  };
+
+  const handleSetAllSections = (visible: boolean) => {
+    setData((prev: any) => ({
+      ...prev,
+      sectionVisibility: {
+        scratchCard: visible,
+        hero: visible,
+        venue: visible,
+        deviShrine: visible,
+        invitationMessage: visible,
+        familyInvitation: visible,
+        events: visible,
+        lightDiya: visible,
+        rsvp: visible,
+        contact: visible,
+        closingMessage: visible,
+        footer: visible,
+      },
+    }));
   };
 
   const handleSave = async () => {
@@ -233,6 +359,114 @@ export function AdminPanel() {
 
         <div className="space-y-8">
           
+          {/* SECTION: WEBSITE SECTIONS VISIBILITY (SHOW / UNSHOW CONTROLS) */}
+          <section className="bg-gradient-to-br from-[#FFFDF7] to-[#FAF2F5] p-5 sm:p-7 rounded-2xl border-2 border-[#D4AF37] shadow-md relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-5 pb-4 border-b border-[#D4AF37]/35">
+              <div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-[#B8141B] uppercase tracking-wider flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5 text-[#D4AF37]" />
+                  <span>Website Sections Visibility (Show & Unshow)</span>
+                </h2>
+                <p className="text-xs text-[#7A4B5B] font-serif mt-1">
+                  Click the <strong className="text-[#B8141B]">Show / Unshow</strong> button for any section column to instantly hide or unhide the whole section particularly from the website.
+                </p>
+              </div>
+
+              {/* Quick Batch Controls */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleSetAllSections(true)}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-400 hover:bg-emerald-100 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                  Show All (सभी दिखाएं)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetAllSections(false)}
+                  className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-300 hover:bg-rose-100 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <EyeOff className="w-3.5 h-3.5 text-rose-600" />
+                  Hide All (सभी छुपाएं)
+                </button>
+              </div>
+            </div>
+
+            {/* Grid of All 12 Section Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {SECTION_METADATA.map((sec) => {
+                const isVisible = data.sectionVisibility?.[sec.key] !== false;
+                return (
+                  <div
+                    key={sec.key}
+                    className={`p-3.5 rounded-xl border-2 transition-all flex flex-col justify-between ${
+                      isVisible
+                        ? "bg-[#FFFDF7] border-[#D4AF37]/50 shadow-xs"
+                        : "bg-stone-50 border-stone-200 opacity-75"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{sec.icon}</span>
+                          <div>
+                            <h3 className={`text-xs font-bold uppercase tracking-wider leading-tight ${
+                              isVisible ? "text-[#3C1B26]" : "text-stone-500 line-through"
+                            }`}>
+                              {sec.label}
+                            </h3>
+                            <span className="text-[10px] text-[#E65100] font-serif block">
+                              {sec.hindiLabel}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[10.5px] text-[#7A4B5B] font-serif leading-snug mb-3">
+                        {sec.desc}
+                      </p>
+                    </div>
+
+                    {/* Show & Unshow Toggle Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSection(sec.key)}
+                      aria-pressed={isVisible}
+                      className={`w-full py-2 px-3 rounded-lg border-2 flex items-center justify-between transition-all duration-200 cursor-pointer ${
+                        isVisible
+                          ? "bg-emerald-50 hover:bg-emerald-100 border-emerald-400 text-emerald-900 shadow-xs"
+                          : "bg-rose-50 hover:bg-rose-100 border-rose-300 text-rose-800"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider">
+                        {isVisible ? (
+                          <>
+                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>SHOW</span>
+                            <span className="text-[9px] font-normal text-emerald-700">(Visible)</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5 text-rose-600" />
+                            <span>UNSHOW</span>
+                            <span className="text-[9px] font-normal text-rose-700">(Hidden)</span>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Pill Switch Indicator */}
+                      <div className={`w-8 h-4 rounded-full p-0.5 transition-colors flex items-center ${
+                        isVisible ? "bg-emerald-600 justify-end" : "bg-stone-300 justify-start"
+                      }`}>
+                        <div className="w-3 h-3 rounded-full bg-white shadow-xs" />
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
           {/* SECTION: HERO SECTION IMAGE (HD / 4K) */}
           <section className="bg-[#FAF2F5] p-5 sm:p-6 rounded-2xl border-2 border-[#D4AF37]/60 shadow-sm">
             <h2 className="text-lg font-bold text-[#B8141B] uppercase tracking-wider mb-2 flex items-center gap-2">

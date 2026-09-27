@@ -4,6 +4,20 @@ export const weddingData: WeddingData = {
   eventName: "MATA KI CHOWKI",
   deviName: "KAROLI WALI MATA",
   deviImageUrl: "", // Can be uploaded via Admin Panel or customized
+  sectionVisibility: {
+    scratchCard: true,
+    hero: true,
+    venue: true,
+    deviShrine: true,
+    invitationMessage: true,
+    familyInvitation: true,
+    events: true,
+    lightDiya: true,
+    rsvp: true,
+    contact: true,
+    closingMessage: true,
+    footer: true,
+  },
   familyMembers: {
     elder1: "AJIT KUMAR GOYAL",
     elder2: "MAMTA AGARWAL",

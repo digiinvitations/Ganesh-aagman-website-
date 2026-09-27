@@ -31,6 +31,7 @@ export async function getWeddingData(templateId: string = DEFAULT_TEMPLATE_ID): 
       return {
         ...defaultData,
         ...data,
+        sectionVisibility: { ...defaultData.sectionVisibility, ...(data.sectionVisibility || {}) },
         venue: { ...defaultData.venue, ...(data.venue || {}) },
         familyMembers: { ...defaultData.familyMembers, ...(data.familyMembers || {}) },
         contactPerson: { ...defaultData.contactPerson, ...(data.contactPerson || {}) },
